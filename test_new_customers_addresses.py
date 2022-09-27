@@ -28,6 +28,13 @@ class TestCustomersGenerator(unittest.TestCase):
                 self.assertTrue(result[i][1].islower())
             else:
                 self.assertFalse(result[i][1].islower())
+                
+    def test_customers_age(self):
+        result = new_customers(30, list_of_create_dates(30))
+        for i in range(30):
+            birth_date = datetime.strptime(result[i][5], '%Y-%m-%d')
+            create_date = datetime.strptime(result[i][6], '%Y-%m-%d %H:%M:%S')
+            self.assertGreaterEqual(create_date.year - birth_date.year - ((create_date.month, create_date.day) < (birth_date.month, birth_date.day)), 18)
 
 
 
