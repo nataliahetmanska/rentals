@@ -20,6 +20,11 @@ class TestCustomersGenerator(unittest.TestCase):
         result = new_customers(30, list_of_create_dates(30))
         for i in range(30):
             self.assertIsInstance(result[i], tuple)
+            
+    def test_length_of_tuple_containing_customers_information(self):
+        result = new_customers(30, list_of_create_dates(30))
+        for i in range(30):
+            self.assertEqual(len(result[i]), 8)
 
     def test_misprint_in_customers_names(self):
         result = new_customers(30, list_of_create_dates(30))
