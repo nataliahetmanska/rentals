@@ -19,21 +19,59 @@ from datetime import date, timedelta, datetime
 import random as rnd
 import mysql.connector
 from calendar import monthrange
+from operator import itemgetter
+import keyring
 
 
-def insert_data(index):
-    rental_list = generate_rentals(available, latest_date)
-    # dodac customer_id
+def insert_data(index, cursor, rental_list):
+    cursor.execute("SELECT rental.customer_id, COUNT(rental.customer_id), customer.create_date\
+                    FROM customer JOIN rental USING(customer_id)\
+                    GROUP BY customer_id")
+
+    customers = cursor.fetchall()
+
+    customers = sorted(customers, key=itemgetter(1))
+
+    amt = list()
+    customer_id = list()
+    create_date = list()
+
+    for i in customers:
+        customer_id.append(i[0])
+        create_date.append(i[2])
+        amt.append(i[1])
+
     insert_list = []
     for day in rental_list:
+
+        '''
+        possible_indx = list()
+        for i in range(len(create_date)):
+            if create_date[i].date() >= datetime.strptime(day[0]["rental_date"], '%Y-%m-%d').date():
+                possible_indx.append(i)
+
+        available_customers = list()
+        amounts = list()
+        print(possible_indx)
+        for index in possible_indx:
+            available_customers.append(customer_id[index])
+            amounts.append(amt[index])
+
+        weights = amounts.reverse()
+        '''
+
         for rent in day:
             insert_list.append((index,
                                 rent["car_id"],
                                 rnd.randint(1, 15),
+                                #rnd.choices(available_customers, weights= weights, k=1),
                                 rent["rental_date"],
                                 rent["return_date"],
                                 str(datetime.strptime(rent["rental_date"], '%Y-%m-%d') + timedelta(days=7)),
                                 rent["rental_date"]))
+
+
+            print(insert_list)
             index += 1
 
     # Q = """INSERT INTO rental (rental_id, rental_rate, customer_id, inventory_id, staff_id, rental_date, return_date,
@@ -45,7 +83,7 @@ def insert_data(index):
     return "Data inserted into databse"
 
 
-def generate_rentals(available, day0):
+def generate_rentals(available, day0, daily_amt, daily_rent, month):
     '''
     generate a list of rentals for each day; daily rentals is a list of dictionaries
     containing car id and return day
@@ -56,16 +94,18 @@ def generate_rentals(available, day0):
     rental_list = list()
     availability_calendar = [set() for _ in range(31)]
 
-    daily_rent, month = daily_rentals(day0)
-
     for day, available_cars in enumerate(availability_calendar):
 
         rental_perday = list()
         available.update(available_cars)
 
-        rentals = set(rnd.sample(tuple(available), k=min(daily_rent[day], len(available))))
+        try:
+            rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
+        except IndexError:
+            continue  # Ignore additions past the end of the list
 
-        return_offsets = [return_offset() for _ in rentals]
+        return_offsets = return_offset(rentals)
+        print(return_offsets)
         rent_date = day0 + timedelta(days=day)
 
         return_dates = []
@@ -73,7 +113,7 @@ def generate_rentals(available, day0):
             return_date = rent_date + timedelta(days=return_offsets[i])
             return_dates.append(return_date)
 
-        print(f' Cars available {len(available)}, rental ids {rentals}')
+        #print(f' Cars available {len(available)}, rental ids {rentals}')
 
         for rental, offset, return_d in zip(rentals, return_offsets, return_dates):
 
@@ -88,24 +128,14 @@ def generate_rentals(available, day0):
 
     return rental_list
 
-def return_offset():
+def return_offset(rentals):
 
-    duration = list()
-    for i in range(1, 16):
-        n = rnd.randint(1, 15)
-        duration.append(n)
+    duration = [rnd.randint(1, 15) for _ in range(1, 16)]
+    weights = duration.reverse()
+    return_offset = [rnd.choices(duration, weights=weights, k=1) for _ in rentals]
+    return_offset = sum(return_offset, [])
 
-    weights = list()
-    for i in duration:
-        if i > 10:
-            weights.append(1)
-        elif 5 < i < 10:
-            weights.append(2)
-        else:
-            weights.append(5)
-
-    return_offset = rnd.choices(duration, weights=weights, k=1)
-    return return_offset[0]
+    return return_offset
 
 
 def daily_rentals (last_date):
@@ -114,30 +144,24 @@ def daily_rentals (last_date):
     year = last_date.year
     num_days = monthrange(year, next_month)[1]
 
-    days = [date(2022, 9, day) for day in range(1, num_days+ 1)]
-
-    year_rental = 300000
-    avg_month = int(year_rental/12)
+    days = [date(year, next_month, day) for day in range(1, num_days + 1)]
 
     if next_month in [7, 8]:
-        N = int(avg_month * 1.2)
-
+        N = 1.2
     else:
-        N = int(avg_month)
-
-    avg_daily = int(N / num_days)
+        N = 1
 
     n_daily = list()
-    print(len(days))
 
     for i in days:
         if weekend_check(i):
-            n_daily.append(int(avg_daily * 1.5))
-
+            n_daily.append(1.5)
         else:
-            n_daily.append(avg_daily)
+            n_daily.append(1)
 
-    return n_daily, num_days
+    multi = [element * N for element in n_daily]
+
+    return multi, num_days
 
 def weekend_check(date):
     if date.weekday() > 4:
@@ -152,25 +176,28 @@ def connection(host, user, password, database, port):
     return mydb, cursor
 
 #zmienić dla swojej bazy
-db, cursor = connection(host="80.211.255.121", user="natalia", password="FiniVik6", database="wheelie", port="3396")
+
+def latest_date(cursor):
+
+    cursor.execute("select rental_date from rental order by rental_date DESC limit 1")
+
+    latest_date = cursor.fetchall()
+    latest_date = latest_date[0][0]
+
+    return latest_date
 
 
-cursor.execute("select rental_date from rental order by rental_date DESC limit 1")
+def car_id (latest_date, cursor):
 
-latest_date = cursor.fetchall()
-latest_date = latest_date[0][0]
+    cursor.execute("SELECT r.inventory_id, r.rental_date, r.return_date\
+                    from rental r inner join (\
+                    select inventory_id, max(rental_date) as MaxRental\
+                    from rental\
+                    group by inventory_id) as r2\
+                    on r.inventory_id = r2.inventory_id and r.rental_date = r2.MaxRental\
+                    where r.inventory_id>570;")
 
-cursor.execute("SELECT r.inventory_id, r.rental_date, r.return_date\
-                from rental r inner join (\
-                select inventory_id, max(rental_date) as MaxRental\
-                from rental\
-                group by inventory_id) as r2\
-                on r.inventory_id = r2.inventory_id and r.rental_date = r2.MaxRental\
-                where r.inventory_id>570;")
-
-rental = cursor.fetchall()
-
-def car_id (rental, latest_date):
+    rental = cursor.fetchall()
     free_cars = list()
     rented_cars = list()
     for i in rental:
@@ -181,11 +208,13 @@ def car_id (rental, latest_date):
             rented_cars.append(i[0])
     return set(free_cars), set(rented_cars)
 
-available, rented = car_id(rental, latest_date)
+
+db, cursor = connection(host="80.211.255.121", user="natalia", password="FiniVik6", database="wheelie", port="3396")
+latest_date = latest_date(cursor)
+available, rented = car_id(latest_date, cursor)
 inv = available.update(rented)
 
 index0 = 1
-insert = insert_data(index0)
-
-
-# TODO: uwzględnić customerów
+daily_rent, month = daily_rentals(latest_date)
+rental_list = generate_rentals(available, latest_date, 300, daily_rent, month)
+insert = insert_data(index0, cursor, rental_list)
