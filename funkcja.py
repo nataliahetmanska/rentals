@@ -224,6 +224,7 @@ database = keyring.get_password("database", user)
 host = keyring.get_password("database_host", user)
 db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 
+
 latest_date_from_db = latest_date_fun(cursor)
 available, rented = car_id(latest_date_from_db, cursor)
 inv = available.update(rented)
