@@ -132,10 +132,27 @@ def new_addresses(num, list_of_create_date):
 
     return addresses
 
-
+'''
 create_dates = list_of_create_dates(10)
 print(create_dates)
 nowe_klienci = new_customers(10, create_dates)
 print(nowe_klienci)
 nowe_adresy = new_addresses(10, create_dates)
 print(nowe_adresy)
+'''
+
+'''
+mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+mycursor = mydb.cursor()
+
+insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s,%s)  """
+
+mycursor.executemany(insert_customer, nowe_klienci)
+mydb.commit()
+
+insert_addresses = """INSERT INTO  address (address_id, address, address2, city_id, postal_code, last_update) 
+            VALUES (%s, %s, %s, %s, %s, %s)"""
+
+mycursor.executemany(insert_addresses, nowe_adresy)
+mydb.commit()'''
