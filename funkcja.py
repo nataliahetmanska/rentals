@@ -208,8 +208,13 @@ def car_id (latest_date, cursor):
             rented_cars.append(i[0])
     return set(free_cars), set(rented_cars)
 
+user = keyring.get_password("username", "username")
+password = keyring.get_password("database_pass",user )
+port = keyring.get_password("database_port",user )
+database = keyring.get_password("database",user )
+host = keyring.get_password("database_host",user )
 
-db, cursor = connection(host="80.211.255.121", user="natalia", password="FiniVik6", database="wheelie", port="3396")
+db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 latest_date = latest_date(cursor)
 available, rented = car_id(latest_date, cursor)
 inv = available.update(rented)
