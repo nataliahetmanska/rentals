@@ -87,35 +87,29 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
     generate a list of rentals for each day; daily rentals is a list of dictionaries
     containing car id and return day
     :param available:
-    :param daily_rentals:
+    :param day0:
+    :param daily_amt:
+    :param daily_rent:
+    :param month:
     :return:
     '''
     rental_list = list()
     availability_calendar = [set() for _ in range(31)]
-
     for day, available_cars in enumerate(availability_calendar):
-
         rental_perday = list()
         available.update(available_cars)
-
         try:
             rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
         except IndexError:
             continue  # Ignore additions past the end of the list
-
-        return_offsets = return_offset(rentals)
-        # print(return_offsets)
+        return_offsets = return_offset_fun(rentals)
         rent_date = day0 + timedelta(days=day)
-
         return_dates = []
         for i in range(len(rentals)):
             return_date = rent_date + timedelta(days=return_offsets[i])
             return_dates.append(return_date)
-
         # print(f' Cars available {len(available)}, rental ids {rentals}')
-
         for rental, offset, return_d in zip(rentals, return_offsets, return_dates):
-
             rental_perday.append(
                 {"rental_date": str(rent_date), "car_id": rental, "offset": offset, "return_date": str(return_d)})
             try:
@@ -124,11 +118,10 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
                 continue  # Ignore additions past the end of the list
         rental_list.append(rental_perday)
         available = available - rentals
-
     return rental_list
 
 
-def return_offset(rentals):
+def return_offset_fun(rentals):
     duration = [rnd.randint(1, 15) for _ in range(1, 16)]
     weights = duration.reverse()
     return_offset = [rnd.choices(duration, weights=weights, k=1) for _ in rentals]
@@ -196,7 +189,7 @@ def latest_index(cursor):
     return latest_index
 
 
-def car_id(latest_date, cursor):
+def get_free_cars(latest_date, cursor):
     cursor.execute("SELECT r.inventory_id, r.rental_date, r.return_date\
                     from rental r inner join (\
                     select inventory_id, max(rental_date) as MaxRental\
@@ -207,29 +200,45 @@ def car_id(latest_date, cursor):
 
     rental = cursor.fetchall()
     free_cars = list()
-    rented_cars = list()
     for i in rental:
         if i[2] <= latest_date:
             free_cars.append(i[0])
 
-        else:
+    return set(free_cars)
+
+
+def get_rented_cars(latest_date, cursor):
+    cursor.execute("SELECT r.inventory_id, r.rental_date, r.return_date\
+                    from rental r inner join (\
+                    select inventory_id, max(rental_date) as MaxRental\
+                    from rental\
+                    group by inventory_id) as r2\
+                    on r.inventory_id = r2.inventory_id and r.rental_date = r2.MaxRental\
+                    where r.inventory_id>570;")
+
+    rental = cursor.fetchall()
+    rented_cars = list()
+    for i in rental:
+        if i[2] > latest_date:
             rented_cars.append(i[0])
-    return set(free_cars), set(rented_cars)
+
+    return set(rented_cars)
 
 
-user = keyring.get_password("username", "username")
-password = keyring.get_password("database_pass", user)
-port = keyring.get_password("database_port", user)
-database = keyring.get_password("database", user)
-host = keyring.get_password("database_host", user)
-db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
+if __name__ == '__main__':
+    user = keyring.get_password("username", "username")
+    password = keyring.get_password("database_pass", user)
+    port = keyring.get_password("database_port", user)
+    database = keyring.get_password("database", user)
+    host = keyring.get_password("database_host", user)
+    db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 
+    latest_date_from_db = latest_date_fun(cursor)
+    free_cars = get_free_cars(latest_date_from_db, cursor)
+    rented_cars = get_rented_cars(latest_date_from_db, cursor)
+    inv = free_cars.update(rented_cars)
 
-latest_date_from_db = latest_date_fun(cursor)
-available, rented = car_id(latest_date_from_db, cursor)
-inv = available.update(rented)
-
-last_index_from_db = latest_index(cursor) + 1
-daily_rent, month = daily_rentals(latest_date_from_db)
-rental_list = generate_rentals(available, latest_date_from_db, 300, daily_rent, month)
-insert = insert_data(last_index_from_db, cursor, rental_list)
+    last_index_from_db = latest_index(cursor) + 1
+    daily_rent, month = daily_rentals(latest_date_from_db)
+    rental_list = generate_rentals(free_cars, latest_date_from_db, 300, daily_rent, month)
+    insert = insert_data(last_index_from_db, cursor, rental_list)
