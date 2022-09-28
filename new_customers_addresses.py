@@ -51,7 +51,13 @@ def new_customers(num, list_of_create_date):
     last_address = "SELECT max(address_id) from address"
     mycursor.execute(last_address)
     records_1 = mycursor.fetchall()
-    last_address_id = (records_1[0])[0]
+    last_address_id = (records_1[0])[0]-num
+    
+    mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
+    address_values = mycursor.fetchall()
+    ids_addresses = []
+    for record in address_values:
+        ids_addresses.append(record[0])
 
     customer = []
     for x in range(num):
@@ -68,7 +74,7 @@ def new_customers(num, list_of_create_date):
             email = f"{last_name[:3].lower()}{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
         else:
             email = f"{unidecode.unidecode(first_name.lower())}.{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
-        address_id = last_address_id+x+1
+        address_id = ids_addresses[x]
 
         create_date = list_of_create_date[x]
         birth_date = str(fake.date_of_birth(None, 24, 70))
