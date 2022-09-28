@@ -17,10 +17,11 @@ Powtórz dla nastepnego dnia
 
 from datetime import date, timedelta, datetime
 import random as rnd
+
+import keyring
 import mysql.connector
 from calendar import monthrange
 from operator import itemgetter
-import keyring
 
 
 def insert_data(index, cursor, rental_list):
@@ -64,12 +65,11 @@ def insert_data(index, cursor, rental_list):
             insert_list.append((index,
                                 rent["car_id"],
                                 rnd.randint(1, 15),
-                                #rnd.choices(available_customers, weights= weights, k=1),
+                                # rnd.choices(available_customers, weights= weights, k=1),
                                 rent["rental_date"],
                                 rent["return_date"],
                                 str(datetime.strptime(rent["rental_date"], '%Y-%m-%d') + timedelta(days=7)),
                                 rent["rental_date"]))
-
 
             print(insert_list)
             index += 1
@@ -105,7 +105,6 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
             continue  # Ignore additions past the end of the list
 
         return_offsets = return_offset(rentals)
-        print(return_offsets)
         rent_date = day0 + timedelta(days=day)
 
         return_dates = []
@@ -113,7 +112,7 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
             return_date = rent_date + timedelta(days=return_offsets[i])
             return_dates.append(return_date)
 
-        #print(f' Cars available {len(available)}, rental ids {rentals}')
+        # print(f' Cars available {len(available)}, rental ids {rentals}')
 
         for rental, offset, return_d in zip(rentals, return_offsets, return_dates):
 
@@ -128,8 +127,8 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
 
     return rental_list
 
-def return_offset(rentals):
 
+def return_offset(rentals):
     duration = [rnd.randint(1, 15) for _ in range(1, 16)]
     weights = duration.reverse()
     return_offset = [rnd.choices(duration, weights=weights, k=1) for _ in rentals]
@@ -138,8 +137,7 @@ def return_offset(rentals):
     return return_offset
 
 
-def daily_rentals (last_date):
-
+def daily_rentals(last_date):
     next_month = last_date.month + 1
     year = last_date.year
     num_days = monthrange(year, next_month)[1]
@@ -163,11 +161,13 @@ def daily_rentals (last_date):
 
     return multi, num_days
 
+
 def weekend_check(date):
     if date.weekday() > 4:
         return True
     else:
         return False
+
 
 def connection(host, user, password, database, port):
     mydb = mysql.connector.connect(host=host, user=user, password=password, database=database, port=port)
@@ -175,10 +175,10 @@ def connection(host, user, password, database, port):
 
     return mydb, cursor
 
-#zmienić dla swojej bazy
+
+# zmienić dla swojej bazy
 
 def latest_date(cursor):
-
     cursor.execute("select rental_date from rental order by rental_date DESC limit 1")
 
     latest_date = cursor.fetchall()
@@ -187,8 +187,7 @@ def latest_date(cursor):
     return latest_date
 
 
-def car_id (latest_date, cursor):
-
+def car_id(latest_date, cursor):
     cursor.execute("SELECT r.inventory_id, r.rental_date, r.return_date\
                     from rental r inner join (\
                     select inventory_id, max(rental_date) as MaxRental\
@@ -209,7 +208,13 @@ def car_id (latest_date, cursor):
     return set(free_cars), set(rented_cars)
 
 
-db, cursor = connection(host="80.211.255.121", user="natalia", password="FiniVik6", database="wheelie", port="3396")
+username = keyring.get_password("username", "username")
+password = keyring.get_password("database_pass", username)
+port = keyring.get_password("database_port", username)
+host = keyring.get_password("database_host", username)
+database = keyring.get_password("database", username)
+
+db, cursor = connection(host=host, user=username, password=password, database=database, port=port)
 latest_date = latest_date(cursor)
 available, rented = car_id(latest_date, cursor)
 inv = available.update(rented)
