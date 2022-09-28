@@ -1,18 +1,18 @@
 '''
-ustal datę początkową
-utwórz listę zbiorów na każy dzień okresu generowania
+Ustal datę początkową.
+Utwórz listę zbiorów na każy dzień okresu generowania.
 Weź Customerów - (razem z create date) razem z ilością wypożyczeń każdego
 Weź inventory
 Znajdź wypożyczone właśnie auta
 Odejmij zbiory
-Wylosuj N <= liczności zbioru, z uwzgl. wytycznych
-Dla N aut ze zbioru dostepnych wylosuj długości wypożyczenia (oblicz daty zwortu)
-Dla każdego auta do wypozyczenia przypisz losowego customera, faworyzuj tych, którzy mają mniej wypożyczeń
-    Każdemu customerowi, który dostanie wypożyczenie zwiększ ilość wypożyczeń.
+Wylosuj N <= liczności zbioru, z uwzględnieniem wytycznych
+Dla N aut ze zbioru dostępnych wylosuj długości wypożyczenia (oblicz daty zwrotu)
+Dla każdego auta do wypożyczenia przypisz losowego customera, faworyzuj tych, którzy mają mniej wypożyczeń
+    Każdemu customerowi, który dostanie wypożyczenie, zwiększ ilość wypożyczeń.
 Wygeneruj inserty
 Dodaj auta wg dat zwrotu do odpowiednich slotów w liście dostępnych aut
 Dodaj pozostałe auta do następnego slotu w liście dostępnych aut
-Powtórz dla nastepnego dnia
+Powtórz dla następnego dnia
 '''
 
 from datetime import date, timedelta, datetime
@@ -178,7 +178,7 @@ def connection(host, user, password, database, port):
 
 # zmienić dla swojej bazy
 
-def latest_date(cursor):
+def latest_date_fun(cursor):
     cursor.execute("select rental_date from rental order by rental_date DESC limit 1")
 
     latest_date = cursor.fetchall()
@@ -217,12 +217,18 @@ def car_id(latest_date, cursor):
     return set(free_cars), set(rented_cars)
 
 
-db, cursor = connection(host="80.211.255.121", user="natalia", password="FiniVik6", database="wheelie", port="3396")
-latest_date = latest_date(cursor)
-available, rented = car_id(latest_date, cursor)
+user = keyring.get_password("username", "username")
+password = keyring.get_password("database_pass", user)
+port = keyring.get_password("database_port", user)
+database = keyring.get_password("database", user)
+host = keyring.get_password("database_host", user)
+
+db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
+latest_date_from_db = latest_date_fun(cursor)
+available, rented = car_id(latest_date_from_db, cursor)
 inv = available.update(rented)
 
-last_index = latest_index(cursor) + 1
-daily_rent, month = daily_rentals(latest_date)
-rental_list = generate_rentals(available, latest_date, 300, daily_rent, month)
-insert = insert_data(last_index, cursor, rental_list)
+last_index_from_db = latest_index(cursor) + 1
+daily_rent, month = daily_rentals(latest_date_from_db)
+rental_list = generate_rentals(available, latest_date_from_db, 300, daily_rent, month)
+insert = insert_data(last_index_from_db, cursor, rental_list)
