@@ -208,6 +208,7 @@ def car_id(latest_date, cursor):
     return set(free_cars), set(rented_cars)
 
 
+
 username = keyring.get_password("username", "username")
 password = keyring.get_password("database_pass", username)
 port = keyring.get_password("database_port", username)
