@@ -10,13 +10,60 @@ new_addresses(num, list_of_create_date):
 
 
 from faker import Faker
-import mysql.connector as msc
 import random
 import pandas as pd
 import unidecode
 
+def connection():
+    import mysql.connector as msc
+    host = '80.211.255.121'
+    port = 3396
+    dbname = 'wheelie'
+    user = ''
+    password = ''
+    connection = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+    return connection
 
-def list_of_create_dates(num):
+def getting_last_customer_id():
+    mydb = connection()
+    mycursor = mydb.cursor()
+    last_cust_id = "SELECT max(customer_id) from customer"
+    mycursor.execute(last_cust_id)
+    records = mycursor.fetchall()
+    return (records[0])[0]
+
+def getting_last_address_id():
+    mydb = connection()
+    mycursor = mydb.cursor()
+    last_address = "SELECT max(address_id) from address"
+    mycursor.execute(last_address)
+    records = mycursor.fetchall()
+    return (records[0])[0]
+
+def getting_new_addresses():
+    last_address_id = getting_last_address_id()
+    mydb = connection()
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
+    address_values = mycursor.fetchall()
+    ids_addresses = []
+    for record in address_values:
+        ids_addresses.append(record[0])
+    return ids_addresses
+
+def creating_list_of_tupples_containing_CityIDCountryID():
+    mydb = connection()
+    mycursor = mydb.cursor()
+    city_query = "SELECT city_id, country_id from city"
+    mycursor.execute(city_query)
+    records = mycursor.fetchall()
+
+    city_country = []
+    for record in records:
+        city_country.append(record)  # [(city_id, country_id),...]
+    return city_country
+
+def generate_list_of_create_dates(num):
     dates = []
     for i in range(num):
 
@@ -33,26 +80,13 @@ def list_of_create_dates(num):
     dates.sort()
     return dates
 
-def new_customers(num, list_of_create_date):
-    host = ''
-    port =
-    dbname = ''
-    user = ''
-    password = ''
-
-    mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+def generate_new_customers(num, list_of_create_date):
+    mydb = connection()
     mycursor = mydb.cursor()
-#Get last Customer_ID
-    last_cust_id = "SELECT max(customer_id) from customer"
-    mycursor.execute(last_cust_id)
-    records = mycursor.fetchall()
-    last_customer_id = (records[0])[0]
-#Get last Address_ID
-    last_address = "SELECT max(address_id) from address"
-    mycursor.execute(last_address)
-    records_1 = mycursor.fetchall()
-    last_address_id = (records_1[0])[0]-num
-    
+
+    last_customer_id = getting_last_customer_id()
+    last_address_id = getting_last_address_id()-num
+
     mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
     address_values = mycursor.fetchall()
     ids_addresses = []
@@ -84,33 +118,17 @@ def new_customers(num, list_of_create_date):
     return customer
 
 
-def new_addresses(num, list_of_create_date):
-    host = ''
-    port =
-    dbname = ''
-    user = ''
-    password = ''
-
-    mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+def generate_new_addresses(num, list_of_create_date):
+    mydb = connection()
     mycursor = mydb.cursor()
+    
+    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
 
-    city_query = "SELECT city_id, country_id from city"
-    mycursor.execute(city_query)
-    records_2 = mycursor.fetchall()
-
-    city_country = []
-    for record in records_2:
-        city_country.append(record) #[(city_id, country_id),...]
-
-    # Last Address_ID
-    last_address = "SELECT max(address_id) from address"
-    mycursor.execute(last_address)
-    records_1 = mycursor.fetchall()
-    last_address_id = (records_1[0])[0]
+    last_address_id = getting_last_address_id()
 
     addresses = []
     for x in range(num):
-        random_city_country = random.choice(city_country)
+        random_city_country = random.choice(city_id_country_id)
         city_id = random_city_country[0] #indeks Miasta klienta
         country_id = random_city_country[1] #indeks Kraju Klienta
 
@@ -133,16 +151,16 @@ def new_addresses(num, list_of_create_date):
     return addresses
 
 '''
-create_dates = list_of_create_dates(10)
+create_dates = generate_list_of_create_dates(10)
 print(create_dates)
-nowe_klienci = new_customers(10, create_dates)
+nowe_klienci = generate_new_customers(10, create_dates)
 print(nowe_klienci)
-nowe_adresy = new_addresses(10, create_dates)
+nowe_adresy = generate_new_addresses(10, create_dates)
 print(nowe_adresy)
 '''
 
 '''
-mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+mydb = connection()
 mycursor = mydb.cursor()
 
 insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
