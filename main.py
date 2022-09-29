@@ -99,7 +99,10 @@ def generate_rentals(available, day0, daily_amt, daily_rent, month):
         rental_perday = list()
         available.update(available_cars)
         try:
-            rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
+            if daily_amt >= 0 and daily_rent[day] > 0:
+                rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
+            else:
+                raise ValueError("Daily number of rental and wages cannot be negative!")
         except IndexError:
             continue  # Ignore additions past the end of the list
         return_offsets = return_offset_fun(rentals)
@@ -237,8 +240,10 @@ if __name__ == '__main__':
     free_cars = get_free_cars(latest_date_from_db, cursor)
     rented_cars = get_rented_cars(latest_date_from_db, cursor)
     inv = free_cars.update(rented_cars)
+    daily_rent_number = 300
 
     last_index_from_db = latest_index(cursor) + 1
     daily_rent, month = daily_rentals(latest_date_from_db)
-    rental_list = generate_rentals(free_cars, latest_date_from_db, 300, daily_rent, month)
+    rental_list = generate_rentals(free_cars, latest_date_from_db, daily_rent_number, daily_rent, month)
+
     insert = insert_data(last_index_from_db, cursor, rental_list)
