@@ -1,10 +1,10 @@
 '''
 FUNCTIONS:
-list_of_create_dates(num):
+generate_list_of_create_dates(num):
     creates list of num sorted dates in September with priority for weekends
-new_customers(num, list_of_create_date):
+generate_new_customers(num, list_of_create_date):
     creates list of num new customers with corresponding create_dates from list_of_create_dates(num)
-new_addresses(num, list_of_create_date):
+generate_new_addresses(num, list_of_create_date):
     creates list of num new addresses with corresponding create_dates from list_of_create_dates(num)
 '''
 
@@ -39,17 +39,6 @@ def getting_last_address_id():
     mycursor.execute(last_address)
     records = mycursor.fetchall()
     return (records[0])[0]
-
-def getting_new_addresses():
-    last_address_id = getting_last_address_id()
-    mydb = connection()
-    mycursor = mydb.cursor()
-    mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
-    address_values = mycursor.fetchall()
-    ids_addresses = []
-    for record in address_values:
-        ids_addresses.append(record[0])
-    return ids_addresses
 
 def creating_list_of_tupples_containing_CityIDCountryID():
     mydb = connection()
