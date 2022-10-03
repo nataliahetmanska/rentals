@@ -85,7 +85,7 @@ def generate_new_customers(num, list_of_create_date):
     mycursor = mydb.cursor()
 
     last_customer_id = getting_last_customer_id()
-    last_address_id = getting_last_address_id()-num
+    last_address_id = getting_last_address_id()-num+1
 
     mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
     address_values = mycursor.fetchall()
@@ -150,27 +150,24 @@ def generate_new_addresses(num, list_of_create_date):
 
     return addresses
 
-'''
-create_dates = generate_list_of_create_dates(10)
-print(create_dates)
-nowe_klienci = generate_new_customers(10, create_dates)
-print(nowe_klienci)
-nowe_adresy = generate_new_addresses(10, create_dates)
-print(nowe_adresy)
-'''
+def insert_addresses(new_addresses):
+    mydb = connection()
+    mycursor = mydb.cursor()
 
-'''
-mydb = connection()
-mycursor = mydb.cursor()
+    insert_addresses = """INSERT INTO  address (address_id, address, address2, city_id, postal_code, last_update) 
+                VALUES (%s, %s, %s, %s, %s, %s)"""
 
-insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s,%s)  """
+    mycursor.executemany(insert_addresses, new_addresses)
+    mydb.commit()
 
-mycursor.executemany(insert_customer, nowe_klienci)
-mydb.commit()
+def insert_customers(new_customers):
+    mydb = connection()
+    mycursor = mydb.cursor()
 
-insert_addresses = """INSERT INTO  address (address_id, address, address2, city_id, postal_code, last_update) 
-            VALUES (%s, %s, %s, %s, %s, %s)"""
+    insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s,%s)  """
 
-mycursor.executemany(insert_addresses, nowe_adresy)
-mydb.commit()'''
+    mycursor.executemany(insert_customer, new_customers)
+    mydb.commit()
+
+
