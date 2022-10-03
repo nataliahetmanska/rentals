@@ -108,11 +108,8 @@ def generate_new_customers(num, list_of_create_date):
 
 
 def generate_new_addresses(num, list_of_create_date):
-    mydb = connection()
-    mycursor = mydb.cursor()
-    
+   
     city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
-
     last_address_id = getting_last_address_id()
 
     addresses = []
