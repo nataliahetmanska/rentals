@@ -61,7 +61,6 @@ def insert_data(index, cursor, rental_list, latest_date_from_db):
             else:
                 continue
 
-
         available_customers = list()
         amounts = list()
 
@@ -185,9 +184,6 @@ def connection(host, user, password, database, port):
     cursor = mydb.cursor()
 
     return mydb, cursor
-
-
-# zmienić dla swojej bazy
 
 def latest_date_fun(cursor):
     cursor.execute("select rental_date from rental order by rental_date DESC limit 1")
