@@ -1,4 +1,4 @@
-from funkcja import generate_rentals
+from main import generate_rentals
 import unittest
 import random as rnd
 
