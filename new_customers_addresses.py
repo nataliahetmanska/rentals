@@ -14,38 +14,28 @@ import random
 import pandas as pd
 import unidecode
 
-def connection():
+def connection(host, user, password, database, port):
     import mysql.connector as msc
-    host = '80.211.255.121'
-    port = 3396
-    dbname = 'wheelie'
-    user = ''
-    password = ''
-    connection = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
-    return connection
+    mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+    cursor = mydb.cursor()
+    return mydb, cursor
 
-def getting_last_customer_id():
-    mydb = connection()
-    mycursor = mydb.cursor()
+def getting_last_customer_id(cursor):
     last_cust_id = "SELECT max(customer_id) from customer"
-    mycursor.execute(last_cust_id)
-    records = mycursor.fetchall()
+    cursor.execute(last_cust_id)
+    records = cursor.fetchall()
     return (records[0])[0]
 
-def getting_last_address_id():
-    mydb = connection()
-    mycursor = mydb.cursor()
+def getting_last_address_id(cursor):
     last_address = "SELECT max(address_id) from address"
-    mycursor.execute(last_address)
-    records = mycursor.fetchall()
+    cursor.execute(last_address)
+    records = cursor.fetchall()
     return (records[0])[0]
 
-def creating_list_of_tupples_containing_CityIDCountryID():
-    mydb = connection()
-    mycursor = mydb.cursor()
+def creating_list_of_tupples_containing_CityIDCountryID(cursor):
     city_query = "SELECT city_id, country_id from city"
-    mycursor.execute(city_query)
-    records = mycursor.fetchall()
+    cursor.execute(city_query)
+    records = cursor.fetchall()
 
     city_country = []
     for record in records:
@@ -69,15 +59,13 @@ def generate_list_of_create_dates(num):
     dates.sort()
     return dates
 
-def generate_new_customers(num, list_of_create_date):
-    mydb = connection()
-    mycursor = mydb.cursor()
+def generate_new_customers(cursor, num, list_of_create_date):
+    
+    last_customer_id = getting_last_customer_id(cursor)
+    last_address_id = getting_last_address_id(cursor)-num+1
 
-    last_customer_id = getting_last_customer_id()
-    last_address_id = getting_last_address_id()-num+1
-
-    mycursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
-    address_values = mycursor.fetchall()
+    cursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
+    address_values = cursor.fetchall()
     ids_addresses = []
     for record in address_values:
         ids_addresses.append(record[0])
@@ -107,10 +95,10 @@ def generate_new_customers(num, list_of_create_date):
     return customer
 
 
-def generate_new_addresses(num, list_of_create_date):
+def generate_new_addresses(cursor, num, list_of_create_date):
    
-    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
-    last_address_id = getting_last_address_id()
+    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID(cursor)
+    last_address_id = getting_last_address_id(cursor)
 
     addresses = []
     for x in range(num):
@@ -136,24 +124,37 @@ def generate_new_addresses(num, list_of_create_date):
 
     return addresses
 
-def insert_addresses(new_addresses):
-    mydb = connection()
-    mycursor = mydb.cursor()
-
+def insert_addresses(cursor, db, new_addresses):
+   
     insert_addresses = """INSERT INTO  address (address_id, address, address2, city_id, postal_code, last_update) 
                 VALUES (%s, %s, %s, %s, %s, %s)"""
 
-    mycursor.executemany(insert_addresses, new_addresses)
-    mydb.commit()
+    cursor.executemany(insert_addresses, new_addresses)
+    db.commit()
 
-def insert_customers(new_customers):
-    mydb = connection()
-    mycursor = mydb.cursor()
-
+def insert_customers(cursor, db, new_customers):
+    
     insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
                         VALUES (%s, %s, %s, %s, %s, %s, %s,%s)  """
 
-    mycursor.executemany(insert_customer, new_customers)
-    mydb.commit()
+    cursor.executemany(insert_customer, new_customers)
+    db.commit()
 
+def generate_customers_and_addresses(cursor, db, num):
+    create_dates = generate_list_of_create_dates(num)
+    new_addresses = generate_new_addresses(cursor, num, create_dates)
+    insert_addresses(cursor, db, new_addresses)
+    generate_new_customers(cursor, num, create_dates)
+    insert_customers(cursor, db, new_customers)
+    
+    
+if __name__ == '__main__':
+    user = keyring.get_password("username", "username")
+    password = keyring.get_password("database_pass", user)
+    port = keyring.get_password("database_port", user)
+    database = keyring.get_password("database", user)
+    host = keyring.get_password("database_host", user)
+  
+    db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 
+    generate_customers_and_addresses(cursor, db, num)    
