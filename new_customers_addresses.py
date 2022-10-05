@@ -16,7 +16,7 @@ import unidecode
 
 def connection(host, user, password, database, port):
     import mysql.connector as msc
-    mydb = msc.connect(host=host, port=port, user=user, password=password, database=dbname)
+    mydb = msc.connect(host=host, port=port, user=user, password=password, database=database)
     cursor = mydb.cursor()
     return mydb, cursor
 
