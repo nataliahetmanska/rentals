@@ -13,6 +13,7 @@ from faker import Faker
 import random
 import pandas as pd
 import unidecode
+import datetime
 
 def connection(host, user, password, database, port):
     import mysql.connector as msc
@@ -47,29 +48,44 @@ def generate_list_of_create_dates(num):
     for i in range(num):
 
         weekend_date = pd.bdate_range(start="2022/08/30", end="2022/09/30", freq="C", weekmask="Sat Sun")
-        weekends = weekend_date.date
-        weekend_day = random.choice(weekends)
-
+        wknd = []
+        for j in range(len(weekend_date)):
+            wknd.append(str(weekend_date[j]))
+        weekend_day = random.choice(wknd)
+        
         work_days_date = pd.bdate_range(start="2022/08/30", end="2022/09/30", weekmask=None)
-        work_days = work_days_date.date
-        work_days_day = random.choice(work_days)
-
+        wrk = []
+        for j in range(len(work_days_date)):
+            wrk.append(str(work_days_date[j]))
+        work_days_day = random.choice(wrk)
+        
         day_date = random.choice([work_days_day, weekend_day])
-        dates.append(day_date.strftime("%Y-%m-%d %H:%M:%S"))
+       
     dates.sort()
     return dates
 
-def generate_new_customers(cursor, num, list_of_create_date):
-    
-    last_customer_id = getting_last_customer_id(cursor)
-    last_address_id = getting_last_address_id(cursor)-num+1
-
+def getting_addresses(cursor, last_address_id):
     cursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
     address_values = cursor.fetchall()
     ids_addresses = []
     for record in address_values:
         ids_addresses.append(record[0])
+    return ids_addresses
 
+def choosing_random_country(city_id_country_id):
+    random_city_country = random.choice(city_id_country_id)
+    city_id = random_city_country[0]  # indeks Miasta klienta
+    country_id = random_city_country[1]  # indeks Kraju Klienta
+
+    countries_dict = {1: "pl_PL", 2: "de_DE", 3: "cs_CZ", 4: "sv_SE",
+                      5: "fi_FI", 6: "no_NO", 7: "es_ES", 8: "fr_FR", 9: "en_IE",
+                      10: "sk_SK", 11: "de_AT", 12: "hu_HU", 13: "it_IT", 14: "el_GR"}
+
+    country_value = countries_dict[country_id]
+    return country_value, city_id
+
+
+def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addresses)):
     customer = []
     for x in range(num):
         fake = Faker(['de_DE', 'pl_PL', 'cs_CZ', 'sv_SE', 'fi_FI', 'no_NO', 'es_ES', 'fr_FR', 'en_IE', 'sk_SK', 'de_AT'])
@@ -95,11 +111,8 @@ def generate_new_customers(cursor, num, list_of_create_date):
     return customer
 
 
-def generate_new_addresses(cursor, num, list_of_create_date):
+def generate_new_addresses(num, list_of_create_date, last_address_id, country_value, city_id):
    
-    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID(cursor)
-    last_address_id = getting_last_address_id(cursor)
-
     addresses = []
     for x in range(num):
         random_city_country = random.choice(city_id_country_id)
@@ -140,12 +153,6 @@ def insert_customers(cursor, db, new_customers):
     cursor.executemany(insert_customer, new_customers)
     db.commit()
 
-def generate_customers_and_addresses(cursor, db, num):
-    create_dates = generate_list_of_create_dates(num)
-    new_addresses = generate_new_addresses(cursor, num, create_dates)
-    insert_addresses(cursor, db, new_addresses)
-    generate_new_customers(cursor, num, create_dates)
-    insert_customers(cursor, db, new_customers)
     
     
 if __name__ == '__main__':
@@ -157,4 +164,20 @@ if __name__ == '__main__':
   
     db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 
-    generate_customers_and_addresses(cursor, db, num)    
+    num = input("Enter the number of new customers: ")
+    
+    list_of_create_dates = generate_list_of_create_dates(num)
+    
+    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID(cursor)
+    last_address_id = getting_last_address_id(cursor)
+    country_value, city_id = choosing_random_country(city_id_country_id)
+    new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, country_value, city_id)
+    
+    #insert_addresses(cursor, db, new_addresses)
+
+    last_customer_id = getting_last_customer_id(cursor)
+    last_address_id1 = getting_last_address_id(cursor) - num + 1
+    ids_addresses = getting_addresses(cursor, last_address_id1)
+    new_customers = generate_new_customers(num, list_of_create_dates, last_customer_id, ids_addresses)
+
+    #insert_customers(cursor, db, new_customers)
