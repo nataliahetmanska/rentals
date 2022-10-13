@@ -60,7 +60,7 @@ def generate_list_of_create_dates(num):
         work_days_day = random.choice(wrk)
         
         day_date = random.choice([work_days_day, weekend_day])
-       
+        dates.append(day_date)
     dates.sort()
     return dates
 
@@ -90,14 +90,14 @@ def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addre
     for x in range(num):
         fake = Faker(['de_DE', 'pl_PL', 'cs_CZ', 'sv_SE', 'fi_FI', 'no_NO', 'es_ES', 'fr_FR', 'en_IE', 'sk_SK', 'de_AT'])
         customer_id = x+last_customer_id+1
-        if x%28==0:
+        if x%7==0:
             name = fake.name().lower()
         else:
             name = fake.name()
         first_name, last_name = name.split(' ', 1)
-        if x%11==0:
+        if x%4==0:
             email = f"{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
-        elif x%15==0:
+        elif x%9==0:
             email = f"{last_name[:3].lower()}{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
         else:
             email = f"{unidecode.unidecode(first_name.lower())}.{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
@@ -115,18 +115,8 @@ def generate_new_addresses(num, list_of_create_date, last_address_id, country_va
    
     addresses = []
     for x in range(num):
-        random_city_country = random.choice(city_id_country_id)
-        city_id = random_city_country[0] #indeks Miasta klienta
-        country_id = random_city_country[1] #indeks Kraju Klienta
-
-
-        countries_dict = {1: "pl_PL", 2: "de_DE", 3: "cs_CZ", 4: "sv_SE",
-                          5: "fi_FI", 6: "no_NO", 7: "es_ES", 8: "fr_FR", 9: "en_IE",
-                          10: "sk_SK", 11: "de_AT", 12: "hu_HU", 13: "it_IT", 14: "el_GR"}
-
-        country_value = countries_dict[country_id]
+       
         fake = Faker(country_value)
-
         address_id = x+last_address_id+1
         full_address = fake.street_name() + ' ' + fake.building_number()
         address = full_address[:50]
