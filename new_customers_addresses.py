@@ -85,7 +85,7 @@ def choosing_random_country(city_id_country_id):
     return country_value, city_id
 
 
-def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addresses)):
+def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addresses):
     customer = []
     for x in range(num):
         fake = Faker(['de_DE', 'pl_PL', 'cs_CZ', 'sv_SE', 'fi_FI', 'no_NO', 'es_ES', 'fr_FR', 'en_IE', 'sk_SK', 'de_AT'])
@@ -155,6 +155,7 @@ if __name__ == '__main__':
     db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
 
     num = input("Enter the number of new customers: ")
+    num = int(num)
     
     list_of_create_dates = generate_list_of_create_dates(num)
     
