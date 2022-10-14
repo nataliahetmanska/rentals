@@ -246,10 +246,8 @@ if __name__ == '__main__':
     rented_cars = get_rented_cars(latest_date_from_db)
     inv = free_cars.update(rented_cars)
     daily_rent_number = 300
-
     daily_rent, month = daily_rentals(latest_date_from_db)
     rental_list = generate_rentals(free_cars, latest_date_from_db, daily_rent_number, daily_rent)
-
     latest_index_from_db = latest_index() + 1
     customers = get_customers()
     new_customers = get_new_customers(latest_date_from_db)
