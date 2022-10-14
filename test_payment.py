@@ -1,7 +1,6 @@
 import payment
 import unittest
-
-
+from decimal import Decimal
 import datetime
 
 
@@ -26,7 +25,15 @@ class TesPaymentGenerator(unittest.TestCase):
                            datetime.date(2016, 1, 10), datetime.date(2016, 12, 10), datetime.date(2016, 8, 15),
                            datetime.date(2016, 7, 19)]
         self.assertEqual(result, expected_result)
+        
+    def test_pay_amount(self):
 
+        rental_rate = [Decimal('149.00'), Decimal('149.00'), Decimal('279.00'), Decimal('149.00'), Decimal('189.00')]
+        rental_date = [datetime.date(2017, 2, 25), datetime.date(2016, 2, 13), datetime.date(2016, 1, 2), datetime.date(2016, 9, 2), datetime.date(2016, 7, 17)]
+        return_date = [datetime.date(2017, 2, 26), datetime.date(2016, 2, 17), datetime.date(2016, 1, 4), datetime.date(2016, 9, 6), datetime.date(2016, 7, 18)]
+        result = payment.pay_amount(rental_rate, rental_date, return_date)
+        expected_result = [Decimal('149.00'), Decimal('596.00'), Decimal('558.00'), Decimal('596.00'), Decimal('189.00')]
+        self.assertEqual(result, expected_result)
 
 def random_randint(x, y):
     return 1
