@@ -58,14 +58,13 @@ def get_new_customers(latest_date_from_db):
     return new_customers
 
 
-def latest_date_fun():
+def get_latest_date():
     Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
-    latest_date = select_data(Q)
-    latest_date = latest_date[0][0]
+    latest_date = select_data(Q)[0][0]
     return latest_date
 
 
-def latest_index():
+def get_latest_index():
     Q = "SELECT rental_id FROM rental ORDER BY rental_id DESC LIMIT 1"
     latest_index = select_data(Q)[0][0]
     return latest_index
@@ -232,14 +231,14 @@ def connection():
 
 
 if __name__ == '__main__':
-    latest_date_from_db = latest_date_fun()
+    latest_date_from_db = get_latest_date()
     free_cars = get_free_cars(latest_date_from_db)
     rented_cars = get_rented_cars(latest_date_from_db)
     inv = free_cars.update(rented_cars)
     daily_rent_number = 300
     daily_rent, month = daily_rentals(latest_date_from_db)
     rental_list = generate_rentals(free_cars, latest_date_from_db, daily_rent_number, daily_rent)
-    latest_index_from_db = latest_index() + 1
+    latest_index_from_db = get_latest_index() + 1
     customers = get_customers()
     new_customers = get_new_customers(latest_date_from_db)
     rental_rates = get_rental_rate()

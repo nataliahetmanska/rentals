@@ -1,7 +1,6 @@
 import main
 import unittest
-from datetime import datetime
-from unittest.mock import Mock, patch
+from datetime import datetime, date
 
 
 class TestRentalGenerator(unittest.TestCase):
@@ -1304,24 +1303,100 @@ class TestRentalGenerator(unittest.TestCase):
 
         self.assertEqual(result, expected_result)
 
-    # TODO test do get_rental_rate
     def test_get_rental_rate(self):
-        main.connection = fake_connection
+        main.connection = fake_connection_get_rental_rate
         result = main.get_rental_rate()
-        print(result)
+        expected_result = {1: 2, 4: 3}
+        self.assertEqual(result, expected_result)
+        self.assertIsInstance(result, dict)
 
-    # TODO test do get_customers
-    # TODO test do get_new_customers
-    # TODO test do return_offset_fun
-    # TODO test do daily_rentals
-    # TODO test do weekend_check
-    # TODO test do latest_date_fun
-    # TODO test do latest_index
-    # TODO test do get_free_cars
-    # TODO test do get_rented_cars
+    def test_get_customers(self):
+        main.connection = fake_connection_get_customers
+        result = main.get_customers()
+
+        good_order = False
+        for customer in result:
+            if customer[1] - 1 < customer[1]:
+                good_order = True
+        self.assertTrue(good_order)
+
+        good_len = True
+        for i in result:
+            if len(i) != 3:
+                good_len = False
+                break
+        self.assertTrue(good_len)
+        self.assertIsInstance(result[0][2], datetime)
+
+    def test_get_new_customers(self):
+        main.connection = fake_connection_get_new_customers
+        latest_date_from_db = datetime(2020, 11, 11, 0, 0)
+        result = main.get_new_customers(latest_date_from_db)
+        good_date = True
+        for i in result:
+            if i[1] < latest_date_from_db:
+                good_date = False
+                break
+        self.assertTrue(good_date)
+
+        good_len = True
+        for i in result:
+            if len(i) != 2:
+                good_len = False
+                break
+        self.assertTrue(good_len)
+        self.assertIsInstance(result[0][1], datetime)
+
+    def test_get_latest_date(self):
+        main.connection = fake_connection_get_latest_date
+        result = main.get_latest_date()
+        self.assertIsInstance(result, date)
+
+    def test_get_latest_index(self):
+        main.connection = fake_connection_get_latest_index
+        result = main.get_latest_index()
+        self.assertIsInstance(result, int)
+
+    def test_get_free_cars(self):
+        main.connection = fake_connection_get_cars
+        latest_date = date(2022, 7, 22)
+        result = main.get_free_cars(latest_date)
+        expected_result = set()
+        self.assertEqual(result, expected_result)
+
+    def test_get_rented_cars(self):
+        main.connection = fake_connection_get_cars
+        latest_date = date(2022, 7, 22)
+        result = main.get_rented_cars(latest_date)
+        expected_result = {641}
+        self.assertEqual(result, expected_result)
+
+    def test_daily_rentals(self):
+        last_date = date(2022, 1, 1)
+        expected_num_days = 28
+        multi, num_days = main.daily_rentals(last_date)
+        self.assertEqual(expected_num_days, num_days)
+
+    def test_weekend_check(self):
+        days = [date(2022, 2, i) for i in range(1, 29)]
+        n_daily = list()
+        for i in days:
+            if main.weekend_check(i):
+                n_daily.append(1.5)
+            else:
+                n_daily.append(1)
+        exp_n_daily = [1, 1, 1, 1, 1.5, 1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1, 1, 1, 1, 1, 1.5, 1.5,
+                       1]
+        self.assertEqual(exp_n_daily, n_daily)
+
+    def test_return_offset_fun_returns_list_with_x_len(self):
+        x = [4, 4, 4, 4]
+        result = main.return_offset_fun(x)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), len(x))
 
 
-class FakeCursor():
+class FakeCursorGetRentalRate():
     def execute(self, _):
         pass
 
@@ -1329,8 +1404,73 @@ class FakeCursor():
         return [(1, 2), (4, 3)]
 
 
-def fake_connection():
-    fake_cursor = FakeCursor()
+class FakeCursorGetCustomers():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1, 2, datetime(2022, 6, 7, 0, 0)), (4, 3, datetime(2022, 5, 5, 0, 0))]
+
+
+class FakeCursorGetNewCustomers():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1, datetime(2022, 6, 7, 0, 0)), (4, datetime(2022, 5, 5, 0, 0))]
+
+
+class FakeCursorLatestDate():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [[date(2022, 1, 1)]]
+
+
+class FakeCursorLatestIndex():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [[1]]
+
+
+class FakeCursorGetCars():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(641, date(2022, 7, 23), date(2022, 8, 2))]
+
+
+def fake_connection_get_rental_rate():
+    fake_cursor = FakeCursorGetRentalRate()
+    return None, fake_cursor
+
+
+def fake_connection_get_customers():
+    fake_cursor = FakeCursorGetCustomers()
+    return None, fake_cursor
+
+
+def fake_connection_get_new_customers():
+    fake_cursor = FakeCursorGetNewCustomers()
+    return None, fake_cursor
+
+
+def fake_connection_get_latest_date():
+    fake_cursor = FakeCursorLatestDate()
+    return None, fake_cursor
+
+
+def fake_connection_get_latest_index():
+    fake_cursor = FakeCursorLatestIndex()
+    return None, fake_cursor
+
+
+def fake_connection_get_cars():
+    fake_cursor = FakeCursorGetCars()
     return None, fake_cursor
 
 
@@ -1342,7 +1482,7 @@ def return_offset_stub(x):
     return [2 for _ in x]
 
 
-def return_cust_id(x,k, _):
+def return_cust_id(x, weights, k):
     return x[:k]
 
 
