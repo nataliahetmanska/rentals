@@ -244,3 +244,4 @@ if __name__ == '__main__':
     new_customers = get_new_customers(latest_date_from_db)
     rental_rates = get_rental_rate()
     insert_list = insert_data_list(rental_list, latest_index_from_db, customers, new_customers, rental_rates)
+
