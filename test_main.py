@@ -1,6 +1,7 @@
 import main
 import unittest
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 
 class TestRentalGenerator(unittest.TestCase):
@@ -374,7 +375,7 @@ class TestRentalGenerator(unittest.TestCase):
         rented_with_no_duplicates = list(set(rented))
         self.assertEqual(len(rented), len(rented_with_no_duplicates))
 
-    def test_insert_data_happy_path(self):
+    def test_insert_data_list_happy_path(self):
         main.rnd.sample = generate_sample
         main.return_offset_fun = return_offset_stub
         latest_date = datetime.strptime("2022-08-30", '%Y-%m-%d')
@@ -399,7 +400,7 @@ class TestRentalGenerator(unittest.TestCase):
         new_customers = list(zip(new_cust_id, new_create_dates, new_number_of_rentals_per_person))
 
         rental_rates = {rate: 119 for rate in range(100, 100 + len(available))}
-        result = main.insert_data(rental_list, latest_index_from_db, customers, new_customers, rental_rates)
+        result = main.insert_data_list(rental_list, latest_index_from_db, customers, new_customers, rental_rates)
 
         expected_result = [(101, 119, 201, 100, 1, '2022-08-30 00:00:00', '2022-09-01 00:00:00', '2022-09-06 00:00:00',
                             '2022-08-30 00:00:00'), (
@@ -1304,6 +1305,11 @@ class TestRentalGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     # TODO test do get_rental_rate
+    def test_get_rental_rate(self):
+        main.connection = fake_connection
+        result = main.get_rental_rate()
+        print(result)
+
     # TODO test do get_customers
     # TODO test do get_new_customers
     # TODO test do return_offset_fun
@@ -1313,6 +1319,19 @@ class TestRentalGenerator(unittest.TestCase):
     # TODO test do latest_index
     # TODO test do get_free_cars
     # TODO test do get_rented_cars
+
+
+class FakeCursor():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1, 2), (4, 3)]
+
+
+def fake_connection():
+    fake_cursor = FakeCursor()
+    return None, fake_cursor
 
 
 def generate_sample(x, k):
