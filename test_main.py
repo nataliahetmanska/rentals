@@ -1342,11 +1342,11 @@ def return_offset_stub(x):
     return [2 for _ in x]
 
 
-def return_cust_id(x, weights, k):
+def return_cust_id(x,k, _):
     return x[:k]
 
 
-def return_staff_id(x, y):
+def return_staff_id(x, _):
     return x
 
 

@@ -123,7 +123,6 @@ def generate_rentals(available, day0, daily_amt, daily_rent):
         for i in range(len(rentals)):
             return_date = rent_date + timedelta(days=return_offsets[i])
             return_dates.append(return_date)
-        # print(f' Cars available {len(available)}, rental ids {rentals}')
         for rental, offset, return_d in zip(rentals, return_offsets, return_dates):
             rental_perday.append(
                 {"rental_date": str(datetime.combine(rent_date, datetime.min.time())), "car_id": rental,
@@ -160,6 +159,7 @@ def insert_data_list(rental_list, latest_index_from_db, customers, new_customers
                 possible_indx.append(i)
             else:
                 continue
+
         available_customers = list()
         amounts = list()
 
@@ -183,7 +183,6 @@ def insert_data_list(rental_list, latest_index_from_db, customers, new_customers
                                 str(datetime.strptime(rent["rental_date"], '%Y-%m-%d %H:%M:%S') + timedelta(days=7)),
                                 rent["rental_date"]))
             latest_index_from_db += 1
-
     return insert_list
 
 
@@ -192,7 +191,6 @@ def return_offset_fun(rentals):
     weights = duration.reverse()
     return_offset = [rnd.choices(duration, weights=weights, k=1) for _ in rentals]
     return_offset = sum(return_offset, [])
-
     return return_offset
 
 
@@ -200,24 +198,18 @@ def daily_rentals(last_date):
     next_month = last_date.month + 1
     year = last_date.year
     num_days = monthrange(year, next_month)[1]
-
     days = [date(year, next_month, day) for day in range(1, num_days + 1)]
-
     if next_month in [7, 8]:
         N = 1.2
     else:
         N = 1
-
     n_daily = list()
-
     for i in days:
         if weekend_check(i):
             n_daily.append(1.5)
         else:
             n_daily.append(1)
-
     multi = [element * N for element in n_daily]
-
     return multi, num_days
 
 
@@ -236,7 +228,6 @@ def connection():
     host = keyring.get_password("database_host", user)
     mydb = mysql.connector.connect(host=host, user=user, password=password, database=database, port=port)
     cursor = mydb.cursor()
-
     return mydb, cursor
 
 
