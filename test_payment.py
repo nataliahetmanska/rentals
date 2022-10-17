@@ -2,7 +2,7 @@ import payment
 import unittest
 from decimal import Decimal
 import datetime
-
+from freezegun import freeze_time
 
 class TesPaymentGenerator(unittest.TestCase):
 
@@ -34,10 +34,25 @@ class TesPaymentGenerator(unittest.TestCase):
         result = payment.pay_amount(rental_rate, rental_date, return_date)
         expected_result = [Decimal('149.00'), Decimal('596.00'), Decimal('558.00'), Decimal('596.00'), Decimal('189.00')]
         self.assertEqual(result, expected_result)
+        
+    @freeze_time("Sep 29th, 2022")
+    def test_last_update(self):
+
+        payment.rnd.randint = random_randint
+        rental_date = [datetime.date(2022, 9, 11), datetime.date(2022, 9, 14),
+                       datetime.date(2022, 9, 17), datetime.date(2022, 9, 20), datetime.date(2022, 7, 21)]
+        result = payment.last_update(rental_date)
+        expected_result = [datetime.date(2022, 9, 12), datetime.date(2022, 9, 15),
+                       datetime.date(2022, 9, 18), datetime.date(2022, 9, 21), datetime.date(2022, 7, 22)]
+        self.assertEqual(result, expected_result)
+        
+        
 
 def random_randint(x, y):
     return 1
 
+def test_nice_datetime():
+    assert date.today() == date(2022, 9, 29)
 
 if __name__ == '__main__':
     unittest.main()
