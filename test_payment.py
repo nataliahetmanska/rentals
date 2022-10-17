@@ -47,12 +47,35 @@ class TesPaymentGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
         
         
+    def test_get_rentals(self):
+        payment.connection = fake_connection_get_rentals
+        latest_date_from_db = datetime.date(2017, 3, 4)
+        rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline = payment.get_rentals(latest_date_from_db)
+        self.assertEqual(rental_id, [1300001, 1300007])
+        self.assertEqual(rental_rate, [Decimal('149.00'), Decimal('149.00')])
+        self.assertEqual(customer_id, [94714, 89117])
+        self.assertEqual(rental_date, [datetime.date(2017, 2, 25), datetime.date(2016, 2, 13)])
+        self.assertEqual(return_date, [datetime.date(2017, 3, 6), datetime.date(2016, 2, 17)])
+        self.assertEqual(payment_deadline, [datetime.date(2017, 3, 4), datetime.date(2016, 2, 20)])
+        
 
 def random_randint(x, y):
     return 1
 
 def test_nice_datetime():
     assert date.today() == date(2022, 9, 29)
+    
+class FakeCursorGetRentals():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1300001, Decimal('149.00'), 94714, datetime.date(2017, 2, 25), datetime.date(2017, 3, 6), datetime.date(2017, 3, 4)),
+                (1300007, Decimal('149.00'), 89117, datetime.date(2016, 2, 13), datetime.date(2016, 2, 17), datetime.date(2016, 2, 20))]
+
+def fake_connection_get_rentals():
+    fake_cursor = FakeCursorGetRentals()
+    return None, fake_cursor
 
 if __name__ == '__main__':
     unittest.main()
