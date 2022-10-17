@@ -65,9 +65,9 @@ def get_rentals(latest_date_from_db):
     return rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount
 
 
-def max_payment_id(cursor):
-    cursor.execute("SELECT payment_id FROM payment")
-    previous_id = cursor.fetchall()
+def max_payment_id():
+    query = "SELECT payment_id FROM payment"
+    previous_id = select_data(query)
     unzipped = list(zip(*previous_id))
 
     max_payment_id = max(unzipped[0])
@@ -89,11 +89,11 @@ if __name__ == '__main__':
     
     db, cursor = connection()
 
-    latest_date_from_db = latest_date_fun(cursor)
-    max_payment_id = max_payment_id(cursor)
+    latest_date_from_db = latest_date_fun()
+    max_payment_id = max_payment_id()
 
-    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(cursor,
-                                                                                                          latest_date_from_db)
+    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(latest_date_from_db)
+                                                                                                          
     payment_id = list(range(max_payment_id, max_payment_id + amount + 1))
     pay_amount = pay_amount(rental_rate, rental_date, return_date)
     payment_date = payment_date(payment_deadline, amount)
