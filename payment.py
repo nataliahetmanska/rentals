@@ -1,4 +1,4 @@
-from main import connection, latest_date_fun
+from main import connection, latest_date_fun, select_data
 import keyring
 import random as rnd
 from datetime import timedelta, date
@@ -47,11 +47,11 @@ def last_update(rental_date):
     return update
 
 
-def get_rentals(cursor, latest_date_from_db):
-    cursor.execute(f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
-                    WHERE rental_date > {latest_date_from_db}')
-
-    rental = cursor.fetchall()
+def get_rentals(latest_date_from_db):
+    
+    query = f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
+                    WHERE rental_date > {latest_date_from_db}'
+    rentals = select_data(query)
     rental = [list(t) for t in zip(*rental)]
 
     rental_id = rental[0]
@@ -86,12 +86,8 @@ def insert_payment(db, cursor, payment):
 
 
 if __name__ == '__main__':
-    user = keyring.get_password("username", "username")
-    password = keyring.get_password("database_pass", user)
-    port = keyring.get_password("database_port", user)
-    database = keyring.get_password("database", user)
-    host = keyring.get_password("database_host", user)
-    db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
+    
+    db, cursor = connection()
 
     latest_date_from_db = latest_date_fun(cursor)
     max_payment_id = max_payment_id(cursor)
