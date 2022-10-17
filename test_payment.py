@@ -6,13 +6,13 @@ from freezegun import freeze_time
 
 class TesPaymentGenerator(unittest.TestCase):
 
-    def test_generating_payment_id(self):
+    def test_payment_id(self):
         amount = 10
         result = payment.payment_id(amount)
         expected_result = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.assertEqual(result, expected_result)
 
-    def test_generate_payment_date(self):
+    def test_payment_date(self):
         payment.rnd.randint = random_randint
         payment_deadline = [datetime.date(2017, 3, 4), datetime.date(2016, 2, 20), datetime.date(2016, 1, 16),
                             datetime.date(2016, 9, 9), datetime.date(2016, 7, 24), datetime.date(2016, 5, 8),
