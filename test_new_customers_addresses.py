@@ -85,7 +85,30 @@ class TestCustomersGenerator(unittest.TestCase):
         result = new_customers_addresses.generate_new_customers(num, list_of_create_date, last_customer_id, ids_addresses)
         self.assertEqual(expected_result, result)
 
+    def test_getting_last_address_id(self):
+        new_customers_addresses.connection = fake_connection_get_last_address_id
+        result = new_customers_addresses.getting_last_address_id()
+        self.assertIsInstance(result, int)
+        self.assertEqual(result, 6)
 
+    def test_getting_addresses(self):
+        new_customers_addresses.connection = fake_connection_getting_addresses
+        expected_result = [1, 2]
+        result = new_customers_addresses.getting_addresses(1)
+        self.assertEqual(result, expected_result)
+
+    def test_getting_last_customer_id(self):
+        new_customers_addresses.connection = fake_connection_get_last_customer_id
+        result = new_customers_addresses.getting_last_customer_id()
+        self.assertIsInstance(result, int)
+        self.assertEqual(result, 6)
+
+    def test_choosing_random_country(self):
+        new_customers_addresses.random.choice = random_choice
+        city_id_country_id = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1)]
+        expected_result = "pl_PL", 1
+        result = new_customers_addresses.choosing_random_country(city_id_country_id)
+        self.assertEqual(expected_result, result)
 
 
 
@@ -109,6 +132,40 @@ def fake_domain_name(x):
 
 def fake_birth_date(x,y,z,t):
     return str(date(1993, 8, 1))
+
+class FakeCursorLastAddressId():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [[6]]
+
+def fake_connection_get_last_address_id():
+    fake_cursor = FakeCursorLastAddressId()
+    return None, fake_cursor
+
+class FakeCursorGettingAddresses():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1, 'Żwirki i Wigury 1', '', 22, '00-001', datetime.datetime(2022, 7, 25, 10, 59, 34)),
+                (2, 'Graniczna 190', '', 23, '54-530', datetime.datetime(2022, 7, 25, 11, 6, 43))]
+
+def fake_connection_getting_addresses():
+    fake_cursor = FakeCursorGettingAddresses()
+    return None, fake_cursor
+
+class FakeCursorLastCustomerId():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [[6]]
+
+def fake_connection_get_last_customer_id():
+    fake_cursor = FakeCursorLastCustomerId()
+    return None, fake_cursor
 
 if __name__ == '__main__':
     unittest.main()
