@@ -148,10 +148,16 @@ def return_offset_fun(rentals):
 
 
 def daily_rentals(last_date):
-    next_month = last_date.month + 1
-    year = last_date.year
-    num_days = monthrange(year, next_month)[1]
 
+    if last_date.month != 12:
+        next_month = last_date.month + 1
+        year = last_date.year
+
+    else:
+        next_month = 1
+        year = last_date.year + 1
+
+    num_days = monthrange(year, next_month)[1]
     days = [date(year, next_month, day) for day in range(1, num_days + 1)]
 
     if next_month in [7, 8]:
