@@ -116,11 +116,10 @@ def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addre
     return customer
 
 
-def generate_new_addresses(num, list_of_create_date, last_address_id, country_value, city_id):
-   
+def generate_new_addresses(num, list_of_create_date, last_address_id, city_id_country_id):
     addresses = []
     for x in range(num):
-       
+        country_value, city_id = choosing_random_country(city_id_country_id)
         fake = Faker(country_value)
         address_id = x+last_address_id+1
         full_address = fake.street_name() + ' ' + fake.building_number()
@@ -133,7 +132,6 @@ def generate_new_addresses(num, list_of_create_date, last_address_id, country_va
     return addresses
 
 def insert_addresses(cursor, db, new_addresses):
-   
     insert_addresses = """INSERT INTO  address (address_id, address, address2, city_id, postal_code, last_update) 
                 VALUES (%s, %s, %s, %s, %s, %s)"""
 
@@ -141,7 +139,6 @@ def insert_addresses(cursor, db, new_addresses):
     db.commit()
 
 def insert_customers(cursor, db, new_customers):
-    
     insert_customer = """ INSERT INTO customer (customer_id, first_name, last_name, address_id, email, birth_date, create_date, last_update)
                         VALUES (%s, %s, %s, %s, %s, %s, %s,%s)  """
 
@@ -160,8 +157,7 @@ if __name__ == '__main__':
     
     city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
     last_address_id = getting_last_address_id()
-    country_value, city_id = choosing_random_country(city_id_country_id)
-    new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, country_value, city_id)
+    new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, city_id_country_it)
     
     #insert_addresses(cursor, db, new_addresses)
 
