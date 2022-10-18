@@ -15,7 +15,7 @@ import pandas as pd
 import unidecode
 
 
-def connection(host, user, password, database, port):
+def connection():
     import mysql.connector as msc
     user = keyring.get_password("username", "username")
     password = keyring.get_password("database_pass", user)
