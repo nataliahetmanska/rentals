@@ -13,15 +13,16 @@ from faker import Faker
 import random
 import pandas as pd
 import unidecode
-
+import keyring
 
 def connection():
     import mysql.connector as msc
-    user = keyring.get_password("username", "username")
-    password = keyring.get_password("database_pass", user)
-    port = keyring.get_password("database_port", user)
-    database = keyring.get_password("database", user)
-    host = keyring.get_password("database_host", user)
+    x = keyring.get_credential(service_name, username=None)
+    user = x.username
+    password = x.password
+    host = '80.211.255.121'
+    port = 3396
+    database = 'wheelie'
     mydb = msc.connect(host=host, port=port, user=user, password=password, database=database)
     cursor = mydb.cursor()
     return mydb, cursor
