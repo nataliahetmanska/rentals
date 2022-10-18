@@ -24,10 +24,10 @@ class TestCustomersGenerator(unittest.TestCase):
         new_customers_addresses.Faker.postcode = post_code
         new_customers_addresses.Faker.street_name = streetname
         new_customers_addresses.Faker.building_number = building_num
+        new_customers_addresses.choosing_random_country = fake_choose_random_country
 
-        country_value = 1
+        city_id_country_id = 1, 1
         last_address_id = 1
-        city_id = 1
         num = 10
 
         list_of_create_date = ['2022-09-03 00:00:00', '2022-09-04 00:00:00',
@@ -47,7 +47,7 @@ class TestCustomersGenerator(unittest.TestCase):
                            (10, 'K Dýmači 83', '', 1, '198 69', '2022-09-22 00:00:00'),
                            (11, 'K Dýmači 83', '', 1, '198 69', '2022-09-26 00:00:00')]
         
-        result = new_customers_addresses.generate_new_addresses(num, list_of_create_date, last_address_id, country_value, city_id)
+        result = new_customers_addresses.generate_new_addresses(num, list_of_create_date, last_address_id, city_id_country_id)
         self.assertEqual(result, expected_result)
 
     def test_generate_new_customers(self):
@@ -132,6 +132,9 @@ def fake_domain_name(x):
 
 def fake_birth_date(x,y,z,t):
     return str(date(1993, 8, 1))
+
+def fake_choose_random_country(x):
+    return "pl_PL", 1
 
 class FakeCursorLastAddressId():
     def execute(self, _):
