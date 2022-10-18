@@ -103,7 +103,7 @@ def generate_new_customers(num, list_of_create_date, last_customer_id, ids_addre
         if x%4==0:
             email = f"{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
         elif x%9==0:
-            email = f"{last_name[:3].lower()}{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
+            email = f"{first_name[:3].lower()}{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
         else:
             email = f"{unidecode.unidecode(first_name.lower())}.{unidecode.unidecode(last_name.lower())}@{fake.domain_name()}"
         address_id = ids_addresses[x]
