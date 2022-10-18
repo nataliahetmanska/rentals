@@ -13,34 +13,38 @@ from faker import Faker
 import random
 import pandas as pd
 import unidecode
-import datetime
+
 
 def connection(host, user, password, database, port):
     import mysql.connector as msc
+    user = keyring.get_password("username", "username")
+    password = keyring.get_password("database_pass", user)
+    port = keyring.get_password("database_port", user)
+    database = keyring.get_password("database", user)
+    host = keyring.get_password("database_host", user)
     mydb = msc.connect(host=host, port=port, user=user, password=password, database=database)
     cursor = mydb.cursor()
     return mydb, cursor
 
-def getting_last_customer_id(cursor):
-    last_cust_id = "SELECT max(customer_id) from customer"
-    cursor.execute(last_cust_id)
-    records = cursor.fetchall()
-    return (records[0])[0]
+def select_data(query):
+    db, cursor = connection()
+    cursor.execute(query)
+    result = cursor.fetchall()
+    return result
 
-def getting_last_address_id(cursor):
-    last_address = "SELECT max(address_id) from address"
-    cursor.execute(last_address)
-    records = cursor.fetchall()
-    return (records[0])[0]
+def getting_last_customer_id():
+    query = "SELECT max(customer_id) from customer"
+    last_cust_id = select_data(query)
+    return last_cust_id[0][0]
 
-def creating_list_of_tupples_containing_CityIDCountryID(cursor):
-    city_query = "SELECT city_id, country_id from city"
-    cursor.execute(city_query)
-    records = cursor.fetchall()
+def getting_last_address_id():
+    query = "SELECT max(address_id) from address"
+    last_address_id = select_data(query)[0][0]
+    return last_address_id
 
-    city_country = []
-    for record in records:
-        city_country.append(record)  # [(city_id, country_id),...]
+def creating_list_of_tupples_containing_CityIDCountryID():
+    query = "SELECT city_id, country_id from city"
+    city_country = select_data(query)
     return city_country
 
 def generate_list_of_create_dates(num):
@@ -61,14 +65,15 @@ def generate_list_of_create_dates(num):
         
         day_date = random.choice([work_days_day, weekend_day])
         dates.append(day_date)
+        
     dates.sort()
     return dates
 
-def getting_addresses(cursor, last_address_id):
-    cursor.execute("SELECT * FROM address where address_id>=(%s)", (last_address_id,))
-    address_values = cursor.fetchall()
+def getting_addresses(last_address_id):
+    query = "SELECT * FROM address where address_id>={last_address_id}"
+    result = select_data(query)
     ids_addresses = []
-    for record in address_values:
+    for record in result:
         ids_addresses.append(record[0])
     return ids_addresses
 
@@ -146,29 +151,23 @@ def insert_customers(cursor, db, new_customers):
     
     
 if __name__ == '__main__':
-    user = keyring.get_password("username", "username")
-    password = keyring.get_password("database_pass", user)
-    port = keyring.get_password("database_port", user)
-    database = keyring.get_password("database", user)
-    host = keyring.get_password("database_host", user)
-  
-    db, cursor = connection(host=host, user=user, password=password, database=database, port=port)
+    db, cursor = connection()
 
     num = input("Enter the number of new customers: ")
     num = int(num)
     
     list_of_create_dates = generate_list_of_create_dates(num)
     
-    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID(cursor)
-    last_address_id = getting_last_address_id(cursor)
+    city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
+    last_address_id = getting_last_address_id()
     country_value, city_id = choosing_random_country(city_id_country_id)
     new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, country_value, city_id)
     
     #insert_addresses(cursor, db, new_addresses)
 
-    last_customer_id = getting_last_customer_id(cursor)
-    last_address_id1 = getting_last_address_id(cursor) - num + 1
-    ids_addresses = getting_addresses(cursor, last_address_id1)
+    last_customer_id = getting_last_customer_id()
+    last_address_id1 = getting_last_address_id() - num + 1
+    ids_addresses = getting_addresses(last_address_id1)
     new_customers = generate_new_customers(num, list_of_create_dates, last_customer_id, ids_addresses)
 
     #insert_customers(cursor, db, new_customers)
