@@ -75,20 +75,26 @@ def insert_payment(payment):
     try:
         db, cursor = connection()
         Q = "INSERT INTO payment (payment_id, customer_id, rental_id, amount, payment_date, last_update) VALUES (%s, %s, %s,%s,%s, %s) "
-        cursor.executemany(Q, payment)
+        # cursor.executemany(Q, payment)
         db.commit()
 
     except Exception as e:
         print("Exception occurred: {}".format(e))
 
 
+def data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt):
+    return list(zip(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt))
+
+
 if __name__ == '__main__':
     latest_date_from_db = get_latest_date()
     max_payment_id = max_payment_id()
-    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(latest_date_from_db)
+    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(
+        latest_date_from_db)
     payment_id = list(range(max_payment_id, max_payment_id + amount + 1))
     pay_amount = pay_amount(rental_rate, rental_date, return_date)
     payment_date = payment_date(payment_deadline, amount)
     last_updt = last_update(rental_date)
-    payment = list(zip(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt))
-    insert_payment(payment)
+    print(payment_date)
+    # payment = data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt)
+    # insert_payment(payment)
