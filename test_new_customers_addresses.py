@@ -9,9 +9,10 @@ class TestCustomersGenerator(unittest.TestCase):
 
     def test_list_of_create_dates_happy_path(self):
         num = 1
+        last_date = datetime.date(2022, 8, 30)
         new_customers_addresses.random.choice = random_choice
 
-        result = new_customers_addresses.generate_list_of_create_dates(num)
+        result = new_customers_addresses.generate_list_of_create_dates(num, last_date)
         date1 = str(datetime.datetime(2022, 8, 30))
 
         res = []
