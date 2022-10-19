@@ -29,13 +29,11 @@ def insert_data(insert_list):
     payment_deadline, create_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     cursor.executemany(Q, insert_list)
 
-
 def select_data(query):
     db, cursor = connection()
     cursor.execute(query)
     result = cursor.fetchall()
     return result
-
 
 def get_rental_rate():
     Q = "SELECT i.inventory_id, c.rental_rate FROM inventory i, car c WHERE i.car_id = c.car_id"
@@ -62,6 +60,7 @@ def get_latest_date():
     Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
     latest_date = select_data(Q)[0][0]
     return latest_date
+
 
 
 def get_latest_index():
@@ -110,6 +109,7 @@ def generate_rentals(available, day0, daily_amt, daily_rent):
         rental_perday = list()
         available.update(available_cars)
         try:
+            rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
             if daily_amt >= 0 and daily_rent[day] > 0:
                 rentals = set(rnd.sample(tuple(available), k=min(daily_amt * daily_rent[day], len(available))))
             else:
@@ -194,8 +194,14 @@ def return_offset_fun(rentals):
 
 
 def daily_rentals(last_date):
-    next_month = last_date.month + 1
-    year = last_date.year
+    if last_date.month != 12:
+        next_month = last_date.month + 1
+        year = last_date.year
+
+    else:
+        next_month = 1
+        year = last_date.year + 1
+
     num_days = monthrange(year, next_month)[1]
     days = [date(year, next_month, day) for day in range(1, num_days + 1)]
     if next_month in [7, 8]:
