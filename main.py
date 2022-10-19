@@ -27,7 +27,7 @@ def insert_data(insert_list):
     db, cursor = connection()
     Q = """INSERT INTO rental (rental_id, rental_rate, customer_id, inventory_id, staff_id, rental_date, return_date, 
     payment_deadline, create_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    cursor.executemany(Q, insert_list)
+    # cursor.executemany(Q, insert_list)
 
 
 def select_data(query):
