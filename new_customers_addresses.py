@@ -48,17 +48,26 @@ def creating_list_of_tupples_containing_CityIDCountryID():
     city_country = select_data(query)
     return city_country
 
-def generate_list_of_create_dates(num):
+def getting_latest_date_from_customer():
+    Q = "SELECT create_date FROM customer ORDER BY create_date DESC LIMIT 1"
+    latest_date = select_data(Q)[0][0]
+    return latest_date
+
+def generate_list_of_create_dates(num, last_date):
+    start_date = last_date + timedelta(days=1)
+    end_date = start_date + timedelta(days=31)
+    start_date = start_date.strftime("%Y/%m/%d")
+    end_date = end_date.strftime("%Y/%m/%d")
     dates = []
     for i in range(num):
 
-        weekend_date = pd.bdate_range(start="2022/08/30", end="2022/09/30", freq="C", weekmask="Sat Sun")
+        weekend_date = pd.bdate_range(start=start_date, end=end_date, freq="C", weekmask="Sat Sun")
         wknd = []
         for j in range(len(weekend_date)):
             wknd.append(str(weekend_date[j]))
         weekend_day = random.choice(wknd)
         
-        work_days_date = pd.bdate_range(start="2022/08/30", end="2022/09/30", weekmask=None)
+        work_days_date = pd.bdate_range(start=start_date, end=end_date, weekmask=None)
         wrk = []
         for j in range(len(work_days_date)):
             wrk.append(str(work_days_date[j]))
@@ -153,8 +162,8 @@ if __name__ == '__main__':
 
     num = input("Enter the number of new customers: ")
     num = int(num)
-    
-    list_of_create_dates = generate_list_of_create_dates(num)
+    last_date = getting_latest_date_from_customer()
+    list_of_create_dates = generate_list_of_create_dates(num, last_date)
     
     city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
     last_address_id = getting_last_address_id()
