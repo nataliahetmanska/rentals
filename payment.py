@@ -1,4 +1,5 @@
-from main import connection, latest_date_fun, select_data
+from main import  latest_date_fun
+import interaction_with_the_database
 import keyring
 import random as rnd
 from datetime import timedelta, date
