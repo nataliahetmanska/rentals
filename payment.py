@@ -1,13 +1,15 @@
-from main import  latest_date_fun
-import interaction_with_the_database
-import keyring
+import interaction_with_database as interaction
 import random as rnd
 from datetime import timedelta, date
+
+def get_latest_date():
+    Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
+    latest_date = interaction.select_data(Q)[0][0]
+    return latest_date
 
 
 def payment_id(amount):
     list_id = list(range(1, amount + 1))
-
     return list_id
 
 
@@ -48,12 +50,12 @@ def last_update(rental_date):
     return update
 
 
-def get_rentals(latest_date_from_db):
+def get_rentals(latest_date):
     
     query = f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
-                    WHERE rental_date > {latest_date_from_db}'
-    rentals = select_data(query)
-    rental = [list(t) for t in zip(*rental)]
+                    WHERE rental_date > {latest_date}'
+    rentals = interaction.select_data(query)
+    rental = [list(t) for t in zip(*rentals)]
 
     rental_id = rental[0]
     rental_rate = rental[1]
@@ -68,16 +70,16 @@ def get_rentals(latest_date_from_db):
 
 def max_payment_id():
     query = "SELECT payment_id FROM payment"
-    previous_id = select_data(query)
+    previous_id = interaction.select_data(query)
     unzipped = list(zip(*previous_id))
-
     max_payment_id = max(unzipped[0])
 
     return max_payment_id
 
 
-def insert_payment(db, cursor, payment):
+def insert_payment(payment):
     try:
+        db, cursor = interaction.connection()
         sql = "INSERT INTO payment (payment_id, customer_id, rental_id, amount, payment_date, last_update) VALUES (%s, %s, %s,%s,%s, %s) "
         cursor.executemany(sql, payment)
         db.commit()
@@ -88,9 +90,7 @@ def insert_payment(db, cursor, payment):
 
 if __name__ == '__main__':
     
-    db, cursor = connection()
-
-    latest_date_from_db = latest_date_fun()
+    latest_date_from_db = get_latest_date()
     max_payment_id = max_payment_id()
 
     rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(latest_date_from_db)
@@ -101,4 +101,4 @@ if __name__ == '__main__':
     last_updt = last_update(rental_date)
     payment = list(zip(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt))
 
-    # insert_payment(db, cursor, payment)
+    # insert_payment(payment)
