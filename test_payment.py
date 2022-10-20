@@ -48,7 +48,7 @@ class TesPaymentGenerator(unittest.TestCase):
         
         
     def test_get_rentals(self):
-        payment.connection = fake_connection_get_rentals
+        payment.interaction.connection = fake_connection_get_rentals
         latest_date_from_db = datetime.date(2017, 3, 4)
         rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = payment.get_rentals(latest_date_from_db)
         self.assertEqual(rental_id, [1300001, 1300007])
@@ -59,7 +59,7 @@ class TesPaymentGenerator(unittest.TestCase):
         self.assertEqual(payment_deadline, [datetime.date(2017, 3, 4), datetime.date(2016, 2, 20)])
         
     def test_max_payment_id(self):
-        payment.connection = fake_connection_max_payment_id
+        payment.interaction.connection = fake_connection_max_payment_id
         result = payment.max_payment_id()
         expected_result = 4
         self.assertEqual(result, expected_result)
