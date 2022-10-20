@@ -8,30 +8,12 @@ generate_new_addresses(num, list_of_create_date):
     creates list of num new addresses with corresponding create_dates from list_of_create_dates(num)
 '''
 
-
+import interaction_with_the_database
 from faker import Faker
 import random
 import pandas as pd
 import unidecode
-import keyring
 
-def connection():
-    import mysql.connector as msc
-    x = keyring.get_credential(service_name, username=None)
-    user = x.username
-    password = x.password
-    host = '80.211.255.121'
-    port = 3396
-    database = 'wheelie'
-    mydb = msc.connect(host=host, port=port, user=user, password=password, database=database)
-    cursor = mydb.cursor()
-    return mydb, cursor
-
-def select_data(query):
-    db, cursor = connection()
-    cursor.execute(query)
-    result = cursor.fetchall()
-    return result
 
 def getting_last_customer_id():
     query = "SELECT max(customer_id) from customer"
