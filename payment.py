@@ -1,13 +1,12 @@
-from main import connection, get_latest_date
+
+import interaction_with_database as interaction
 import random as rnd
 from datetime import timedelta, date
 
-
-def select_data(query):
-    db, cursor = connection()
-    cursor.execute(query)
-    result = cursor.fetchall()
-    return result
+def get_latest_date():
+    Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
+    latest_date = interaction.select_data(Q)[0][0]
+    return latest_date
 
 
 def payment_id(amount):
@@ -47,10 +46,13 @@ def last_update(rental_date):
 
 
 def get_rentals(latest_date):
-    Q = f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
+
+    
+    query = f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
                     WHERE rental_date > {latest_date}'
-    rental = select_data(Q)
-    rental = [list(t) for t in zip(*rental)]
+    rentals = interaction.select_data(query)
+    rental = [list(t) for t in zip(*rentals)]
+
 
     rental_id = rental[0]
     rental_rate = rental[1]
@@ -64,8 +66,10 @@ def get_rentals(latest_date):
 
 
 def max_payment_id():
-    Q = "SELECT payment_id FROM payment"
-    previous_id = select_data(Q)
+
+    query = "SELECT payment_id FROM payment"
+    previous_id = interaction.select_data(query)
+
     unzipped = list(zip(*previous_id))
     max_payment_id = max(unzipped[0])
     return max_payment_id
@@ -73,9 +77,11 @@ def max_payment_id():
 
 def insert_payment(payment):
     try:
-        db, cursor = connection()
-        Q = "INSERT INTO payment (payment_id, customer_id, rental_id, amount, payment_date, last_update) VALUES (%s, %s, %s,%s,%s, %s) "
-        # cursor.executemany(Q, payment)
+
+        db, cursor = interaction.connection()
+        sql = "INSERT INTO payment (payment_id, customer_id, rental_id, amount, payment_date, last_update) VALUES (%s, %s, %s,%s,%s, %s) "
+        cursor.executemany(sql, payment)
+
         db.commit()
 
     except Exception as e:
@@ -87,14 +93,14 @@ def data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date,
 
 
 if __name__ == '__main__':
+
+    
     latest_date_from_db = get_latest_date()
     max_payment_id = max_payment_id()
-    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(
-        latest_date_from_db)
+    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(latest_date_from_db)
     payment_id = list(range(max_payment_id, max_payment_id + amount + 1))
     pay_amount = pay_amount(rental_rate, rental_date, return_date)
     payment_date = payment_date(payment_deadline, amount)
     last_updt = last_update(rental_date)
-    print(payment_date)
-    # payment = data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt)
+    payment = data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date, last_updt)
     # insert_payment(payment)
