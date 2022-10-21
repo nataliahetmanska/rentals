@@ -1,7 +1,7 @@
-
 import interaction_with_database as interaction
 import random as rnd
 from datetime import timedelta, date
+
 
 def get_latest_date():
     Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
@@ -46,13 +46,10 @@ def last_update(rental_date):
 
 
 def get_rentals(latest_date):
-
-    
     query = f'SELECT rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline FROM rental\
                     WHERE rental_date > {latest_date}'
     rentals = interaction.select_data(query)
     rental = [list(t) for t in zip(*rentals)]
-
 
     rental_id = rental[0]
     rental_rate = rental[1]
@@ -66,7 +63,6 @@ def get_rentals(latest_date):
 
 
 def max_payment_id():
-
     query = "SELECT payment_id FROM payment"
     previous_id = interaction.select_data(query)
 
@@ -93,11 +89,10 @@ def data_to_insert(payment_id, customer_id, rental_id, pay_amount, payment_date,
 
 
 if __name__ == '__main__':
-
-    
     latest_date_from_db = get_latest_date()
     max_payment_id = max_payment_id()
-    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(latest_date_from_db)
+    rental_id, rental_rate, customer_id, rental_date, return_date, payment_deadline, amount = get_rentals(
+        latest_date_from_db)
     payment_id = list(range(max_payment_id, max_payment_id + amount + 1))
     pay_amount = pay_amount(rental_rate, rental_date, return_date)
     payment_date = payment_date(payment_deadline, amount)
