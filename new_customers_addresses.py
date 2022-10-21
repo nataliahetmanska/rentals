@@ -8,6 +8,7 @@ generate_new_addresses(num, list_of_create_date):
     creates list of num new addresses with corresponding create_dates from list_of_create_dates(num)
 '''
 
+
 import interaction_with_database as interaction
 from faker import Faker
 import random
