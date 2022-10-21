@@ -21,23 +21,19 @@ import mysql.connector
 from calendar import monthrange
 from operator import itemgetter
 import keyring
+import interaction_with_database as interaction
 
 
 def insert_data(insert_list):
-    db, cursor = connection()
+    db, cursor = interaction.connection()
     Q = """INSERT INTO rental (rental_id, rental_rate, customer_id, inventory_id, staff_id, rental_date, return_date, 
     payment_deadline, create_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     # cursor.executemany(Q, insert_list)
 
-def select_data(query):
-    db, cursor = connection()
-    cursor.execute(query)
-    result = cursor.fetchall()
-    return result
 
 def get_rental_rate():
     Q = "SELECT i.inventory_id, c.rental_rate FROM inventory i, car c WHERE i.car_id = c.car_id"
-    result = select_data(Q)
+    result = interaction.select_data(Q)
     rental_rates = dict((x, int(y)) for x, y in result)
     return rental_rates
 
@@ -45,27 +41,26 @@ def get_rental_rate():
 def get_customers():
     Q = "SELECT rental.customer_id, COUNT(rental.customer_id), customer.create_date FROM customer " \
         "JOIN rental USING(customer_id) GROUP BY customer_id"
-    customers = select_data(Q)
+    customers = interaction.select_data(Q)
     customers = sorted(customers, key=itemgetter(1))
     return customers
 
 
 def get_new_customers(latest_date_from_db):
     Q = f'SELECT customer_id, create_date FROM customer WHERE create_date > {latest_date_from_db}'
-    new_customers = select_data(Q)
+    new_customers = interaction.select_data(Q)
     return new_customers
 
 
 def get_latest_date():
     Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
-    latest_date = select_data(Q)[0][0]
+    latest_date = interaction.select_data(Q)[0][0]
     return latest_date
-
 
 
 def get_latest_index():
     Q = "SELECT rental_id FROM rental ORDER BY rental_id DESC LIMIT 1"
-    latest_index = select_data(Q)[0][0]
+    latest_index = interaction.select_data(Q)[0][0]
     return latest_index
 
 
@@ -73,7 +68,7 @@ def get_free_cars(latest_date):
     Q = "SELECT r.inventory_id, r.rental_date, r.return_date FROM rental r INNER JOIN (SELECT inventory_id, " \
         "max(rental_date) as MaxRental FROM rental GROUP BY inventory_id) as r2 ON r.inventory_id = r2.inventory_id " \
         "AND r.rental_date = r2.MaxRental WHERE r.inventory_id>570;"
-    rental = select_data(Q)
+    rental = interaction.select_data(Q)
     free_cars = list()
     for i in rental:
         if i[2] <= latest_date:
@@ -85,7 +80,7 @@ def get_rented_cars(latest_date):
     Q = "SELECT r.inventory_id, r.rental_date, r.return_date FROM rental r INNER JOIN (SELECT inventory_id, " \
         "max(rental_date) as MaxRental FROM rental GROUP BY inventory_id) as r2 on r.inventory_id = r2.inventory_id " \
         "AND r.rental_date = r2.MaxRental WHERE r.inventory_id>570;"
-    rental = select_data(Q)
+    rental = interaction.select_data(Q)
     rented_cars = list()
     for i in rental:
         if i[2] > latest_date:
@@ -223,17 +218,6 @@ def weekend_check(date):
         return True
     else:
         return False
-
-
-def connection():
-    user = keyring.get_password("username", "username")
-    password = keyring.get_password("database_pass", user)
-    port = keyring.get_password("database_port", user)
-    database = keyring.get_password("database", user)
-    host = keyring.get_password("database_host", user)
-    mydb = mysql.connector.connect(host=host, user=user, password=password, database=database, port=port)
-    cursor = mydb.cursor()
-    return mydb, cursor
 
 
 if __name__ == '__main__':
