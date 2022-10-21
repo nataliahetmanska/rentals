@@ -17,11 +17,11 @@ Powtórz dla następnego dnia
 
 from datetime import date, timedelta, datetime
 import random as rnd
-import mysql.connector
 from calendar import monthrange
 from operator import itemgetter
-import keyring
 import interaction_with_database as interaction
+import csv
+import ast
 
 
 def insert_data(insert_list):
@@ -220,6 +220,17 @@ def weekend_check(date):
         return False
 
 
+def csv_read(test_name):
+    results = {}
+    file = 'tests/expected_results.csv'
+    with open(file, 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile, delimiter=';')
+        for row in reader:
+            list_from_string = ast.literal_eval(str(row[1]))
+            results.update({row[0]: list_from_string})
+    return results[test_name]
+
+
 if __name__ == '__main__':
     latest_date_from_db = get_latest_date()
     free_cars = get_free_cars(latest_date_from_db)
@@ -232,4 +243,4 @@ if __name__ == '__main__':
     customers = get_customers()
     new_customers = get_new_customers(latest_date_from_db)
     rental_rates = get_rental_rate()
-    insert_list = insert_data_list(rental_list, latest_index_from_db, customers, new_customers, rental_rates)
+    # insert_list = insert_data_list(rental_list, latest_index_from_db, customers, new_customers, rental_rates)

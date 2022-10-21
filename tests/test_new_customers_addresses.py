@@ -2,7 +2,7 @@ import new_customers_addresses
 import unittest
 import datetime
 from datetime import date
-from test_main import csv_read
+from main import csv_read
 
 
 class TestCustomersGenerator(unittest.TestCase):
