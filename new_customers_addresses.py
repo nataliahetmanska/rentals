@@ -142,6 +142,8 @@ def insert_customers(cursor, db, new_customers):
     
     
 if __name__ == '__main__':
+    
+    db, cursor = interaction.connection()
 
     num = input("Enter the number of new customers: ")
     num = int(num)
@@ -158,5 +160,5 @@ if __name__ == '__main__':
     last_address_id1 = getting_last_address_id() - num + 1
     ids_addresses = getting_addresses(last_address_id1)
     new_customers = generate_new_customers(num, list_of_create_dates, last_customer_id, ids_addresses)
-
+    
     #insert_customers(cursor, db, new_customers)
