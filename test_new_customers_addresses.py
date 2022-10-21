@@ -1,8 +1,6 @@
 import new_customers_addresses
 import unittest
 import datetime
-from unittest import mock
-import random
 from datetime import date
 
 class TestCustomersGenerator(unittest.TestCase):
@@ -13,7 +11,7 @@ class TestCustomersGenerator(unittest.TestCase):
         new_customers_addresses.random.choice = random_choice
 
         result = new_customers_addresses.generate_list_of_create_dates(num, last_date)
-        date1 = str(datetime.datetime(2022, 8, 30))
+        date1 = str(datetime.datetime(2022, 8, 31))
 
         res = []
         res.append(date1)
@@ -87,19 +85,19 @@ class TestCustomersGenerator(unittest.TestCase):
         self.assertEqual(expected_result, result)
 
     def test_getting_last_address_id(self):
-        new_customers_addresses.connection = fake_connection_get_last_address_id
+        new_customers_addresses.interaction.connection = fake_connection_get_last_address_id
         result = new_customers_addresses.getting_last_address_id()
         self.assertIsInstance(result, int)
         self.assertEqual(result, 6)
 
     def test_getting_addresses(self):
-        new_customers_addresses.connection = fake_connection_getting_addresses
+        new_customers_addresses.interaction.connection = fake_connection_getting_addresses
         expected_result = [1, 2]
         result = new_customers_addresses.getting_addresses(1)
         self.assertEqual(result, expected_result)
 
     def test_getting_last_customer_id(self):
-        new_customers_addresses.connection = fake_connection_get_last_customer_id
+        new_customers_addresses.interaction.connection = fake_connection_get_last_customer_id
         result = new_customers_addresses.getting_last_customer_id()
         self.assertIsInstance(result, int)
         self.assertEqual(result, 6)

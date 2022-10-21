@@ -8,31 +8,33 @@ generate_new_addresses(num, list_of_create_date):
     creates list of num new addresses with corresponding create_dates from list_of_create_dates(num)
 '''
 
-import interaction_with_the_database
+
+import interaction_with_database as interaction
 from faker import Faker
 import random
 import pandas as pd
 import unidecode
+from datetime import timedelta
 
 
 def getting_last_customer_id():
     query = "SELECT max(customer_id) from customer"
-    last_cust_id = select_data(query)
+    last_cust_id = interaction.select_data(query)
     return last_cust_id[0][0]
 
 def getting_last_address_id():
     query = "SELECT max(address_id) from address"
-    last_address_id = select_data(query)[0][0]
+    last_address_id = interaction.select_data(query)[0][0]
     return last_address_id
 
 def creating_list_of_tupples_containing_CityIDCountryID():
     query = "SELECT city_id, country_id from city"
-    city_country = select_data(query)
+    city_country = interaction.select_data(query)
     return city_country
 
 def getting_latest_date_from_customer():
     Q = "SELECT create_date FROM customer ORDER BY create_date DESC LIMIT 1"
-    latest_date = select_data(Q)[0][0]
+    latest_date = interaction.select_data(Q)[0][0]
     return latest_date
 
 def generate_list_of_create_dates(num, last_date):
@@ -62,8 +64,8 @@ def generate_list_of_create_dates(num, last_date):
     return dates
 
 def getting_addresses(last_address_id):
-    query = "SELECT * FROM address where address_id>={last_address_id}"
-    result = select_data(query)
+    query = f"SELECT * FROM address where address_id>={last_address_id}"
+    result = interaction.select_data(query)
     ids_addresses = []
     for record in result:
         ids_addresses.append(record[0])
@@ -140,7 +142,6 @@ def insert_customers(cursor, db, new_customers):
     
     
 if __name__ == '__main__':
-    db, cursor = connection()
 
     num = input("Enter the number of new customers: ")
     num = int(num)
@@ -149,7 +150,7 @@ if __name__ == '__main__':
     
     city_id_country_id = creating_list_of_tupples_containing_CityIDCountryID()
     last_address_id = getting_last_address_id()
-    new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, city_id_country_it)
+    new_addresses = generate_new_addresses(num, list_of_create_dates, last_address_id, city_id_country_id)
     
     #insert_addresses(cursor, db, new_addresses)
 
