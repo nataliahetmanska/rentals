@@ -1,8 +1,6 @@
 import main
 import unittest
 from datetime import datetime, date
-import csv
-import ast
 
 
 class TestRentalGenerator(unittest.TestCase):
@@ -18,7 +16,7 @@ class TestRentalGenerator(unittest.TestCase):
         daily_rent_number = 10
         result = main.generate_rentals(available, latest_date, daily_rent_number, daily_rent_wage)
 
-        expected_result = csv_read('test_generate_rentals_happy_path')
+        expected_result = main.csv_read('test_generate_rentals_happy_path')
         self.assertEqual(result, expected_result)
 
     def test_generating_with_no_rentals(self):
@@ -102,18 +100,18 @@ class TestRentalGenerator(unittest.TestCase):
         rental_rates = {rate: 119 for rate in range(100, 100 + len(available))}
         result = main.insert_data_list(rental_list, latest_index_from_db, customers, new_customers, rental_rates)
 
-        expected_result = csv_read('test_insert_data_list_happy_path')
+        expected_result = main.csv_read('test_insert_data_list_happy_path')
         self.assertEqual(result, expected_result)
 
     def test_get_rental_rate(self):
-        main.connection = fake_connection_get_rental_rate
+        main.interaction.connection = fake_connection_get_rental_rate
         result = main.get_rental_rate()
         expected_result = {1: 2, 4: 3}
         self.assertEqual(result, expected_result)
         self.assertIsInstance(result, dict)
 
     def test_get_customers(self):
-        main.connection = fake_connection_get_customers
+        main.interaction.connection = fake_connection_get_customers
         result = main.get_customers()
 
         good_order = False
@@ -131,7 +129,7 @@ class TestRentalGenerator(unittest.TestCase):
         self.assertIsInstance(result[0][2], datetime)
 
     def test_get_new_customers(self):
-        main.connection = fake_connection_get_new_customers
+        main.interaction.connection = fake_connection_get_new_customers
         latest_date_from_db = datetime(2020, 11, 11, 0, 0)
         result = main.get_new_customers(latest_date_from_db)
         good_date = True
@@ -150,24 +148,24 @@ class TestRentalGenerator(unittest.TestCase):
         self.assertIsInstance(result[0][1], datetime)
 
     def test_get_latest_date(self):
-        main.connection = fake_connection_get_latest_date
+        main.interaction.connection = fake_connection_get_latest_date
         result = main.get_latest_date()
         self.assertIsInstance(result, date)
 
     def test_get_latest_index(self):
-        main.connection = fake_connection_get_latest_index
+        main.interaction.connection = fake_connection_get_latest_index
         result = main.get_latest_index()
         self.assertIsInstance(result, int)
 
     def test_get_free_cars(self):
-        main.connection = fake_connection_get_cars
+        main.interaction.connection = fake_connection_get_cars
         latest_date = date(2022, 7, 22)
         result = main.get_free_cars(latest_date)
         expected_result = set()
         self.assertEqual(result, expected_result)
 
     def test_get_rented_cars(self):
-        main.connection = fake_connection_get_cars
+        main.interaction.connection = fake_connection_get_cars
         latest_date = date(2022, 7, 22)
         result = main.get_rented_cars(latest_date)
         expected_result = {641}
@@ -290,16 +288,6 @@ def return_cust_id(x, weights, k):
 
 def return_staff_id(x, _):
     return x
-
-
-def csv_read(test_name):
-    results = {}
-    with open('expected_results.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=';')
-        for row in reader:
-            list_from_string = ast.literal_eval(row[1])
-            results.update({row[0]: list_from_string})
-    return results[test_name]
 
 
 if __name__ == '__main__':
