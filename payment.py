@@ -1,7 +1,5 @@
 
 import interaction_with_database as interaction
-
-
 import random as rnd
 from datetime import timedelta, date
 
@@ -9,13 +7,6 @@ def get_latest_date():
     Q = "SELECT rental_date FROM rental ORDER BY rental_date DESC LIMIT 1"
     latest_date = interaction.select_data(Q)[0][0]
     return latest_date
-
-
-def select_data(query):
-    db, cursor = connection()
-    cursor.execute(query)
-    result = cursor.fetchall()
-    return result
 
 
 def payment_id(amount):
