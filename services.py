@@ -37,7 +37,7 @@ def check_if_car_is_rented(inv_id, service_date):
     return car_is_rented
 
 
-def get_service_dates():
+def create_service_dates():
     service_dates = []
     start_date = datetime.strptime('2016-07-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     today = datetime.today()
@@ -48,7 +48,7 @@ def get_service_dates():
     return service_dates
 
 
-def get_tire_change_dates():
+def create_tire_change_dates():
     tire_dates = []
     start_date_summer = datetime.strptime('2016-03-15 00:00:00', '%Y-%m-%d %H:%M:%S')
     start_date_winter = datetime.strptime('2016-11-15 00:00:00', '%Y-%m-%d %H:%M:%S')
@@ -78,13 +78,13 @@ def generate_services(service_dates, service_type, service_cost):
 
 
 def services_list():
-    service_dates = get_service_dates()
+    service_dates = create_service_dates()
     services = generate_services(service_dates, 'service', 500)
     return services
 
 
 def tire_change_list():
-    service_dates = get_tire_change_dates()
+    service_dates = create_tire_change_dates()
     tire_change = generate_services(service_dates, 'tire_change', 200)
     return tire_change
 
