@@ -23,6 +23,14 @@ class TestServicesGenerator(unittest.TestCase):
         result = service.get_rented_cars(service_date1)
         expected_result = [{1: datetime.date(2017, 2, 16)}, {5: datetime.date(2017, 2, 22)}, {6: datetime.date(2017, 2, 15)}]
         self.assertEqual(result, expected_result)
+        
+    def test_check_if_car_is_rented(self):
+        inv_id = 5
+        service_date = datetime.datetime(2017, 1, 10, 0, 0)
+        result = service.check_if_car_is_rented(inv_id, service_date, get_rented_cars_mp)
+        expected_result = 5, datetime.date(2017, 1, 11)
+        self.assertEqual(result, expected_result)    
+    
 
     @freeze_time("Aug 29th, 2018")
     def test_create_service_dates(self):
@@ -39,6 +47,8 @@ class TestServicesGenerator(unittest.TestCase):
                            datetime.datetime(2018, 3, 15, 0, 0)]
         result = service.create_tire_change_dates()
         self.assertEqual(result, expected_result)
+        
+    
         
         
 
@@ -74,3 +84,6 @@ def fake_connection_get_rented_cars():
 
 def test_datetime():
     assert date.today() == date(2018, 8, 29)
+    
+def get_rented_cars_mp(service_date):
+    return [{1: datetime.date(2017, 1, 16)}, {5: datetime.date(2017, 1, 11)}, {6: datetime.date(2017, 1, 15)}]
