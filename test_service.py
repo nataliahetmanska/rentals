@@ -15,7 +15,13 @@ class TestServicesGenerator(unittest.TestCase):
         self.assertEqual(result1, [])
         self.assertEqual(result2, [1, 2])
         self.assertEqual(result3, [3])
-
+    
+    def test_get_rented_cars(self):
+        service.interaction.connection = fake_connection_get_rented_cars
+        service_date1 = datetime.datetime(2017, 2, 14, 0, 0)
+        result = service.get_rented_cars(service_date1)
+        expected_result = [{1: datetime.date(2017, 2, 16)}, {5: datetime.date(2017, 2, 22)}, {6: datetime.date(2017, 2, 15)}]
+        self.assertEqual(result, expected_result)
 
 
 
@@ -31,4 +37,20 @@ class FakeCursorLastServiceId():
 
 def fake_connection_get_last_service_id():
     fake_cursor = FakeCursorLastServiceId()
+    return None, fake_cursor
+
+
+class FakeCursorRentedCars():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [(1, datetime.date(2017, 2, 13), datetime.date(2017, 2, 16)),
+                (5, datetime.date(2017, 2, 14), datetime.date(2017, 2, 22)),
+                (6, datetime.date(2017, 2, 14), datetime.date(2017, 2, 15)),
+                (8, datetime.date(2017, 2, 16), datetime.date(2017, 2, 20))]
+
+
+def fake_connection_get_rented_cars():
+    fake_cursor = FakeCursorRentedCars()
     return None, fake_cursor
