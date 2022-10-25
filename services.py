@@ -90,10 +90,17 @@ def services_list():
 
 def tire_change_list():
     tire_change_dates = create_tire_change_dates()
-    tire_change = generate_services(tire_change_dates, 'summer_tire_change', 200)
+    tire_change = generate_services(tire_change_dates, 'tire_change', 200)
     return tire_change
+
+def merging_services(services, tire_change):
+    services.extend(tire_change)
+    print(services)
+    entire_service_list = sorted(services, key=lambda x: x[3])
+    return entire_service_list
 
 
 if __name__ == "__main__":
-    services_list()
-    tire_change_list()
+    services = services_list()
+    tire_change = tire_change_list()
+    entire_service_list = merging_services(services, tire_change)
