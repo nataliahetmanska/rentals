@@ -58,14 +58,14 @@ def create_tire_change_dates():
     start_date_winter = datetime.strptime('2016-11-15 00:00:00', '%Y-%m-%d %H:%M:%S')
 
     today = datetime.today()
-    while start_date_summer < today or  start_date_winter < today:
+    while start_date_summer < today:
         tire_dates.append(start_date_summer)
-        tire_dates.append(start_date_winter)
         start_date_summer += timedelta(days=365)
+    while start_date_winter < today:
+        tire_dates.append(start_date_winter)
         start_date_winter += timedelta(days=365)
+    tire_dates.sort()
     return tire_dates
-
-
 
 def generate_services(service_dates, service_type, service_cost):
     service_table = []
