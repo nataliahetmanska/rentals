@@ -74,7 +74,7 @@ def generate_services(service_dates, service_type, service_cost, get_rented_cars
     for s_date in service_dates:
         cars_stock = get_cars_in_stock(s_date)
         for stock_id in cars_stock:
-            (inv_id, return_date) = check_if_car_is_rented(stock_id, s_date)
+            (inv_id, return_date) = check_if_car_is_rented(stock_id, s_date, get_rented_cars)
             if return_date == s_date:
                 service_table.append((indeks, inv_id, service_type, s_date, service_cost))
             else:
