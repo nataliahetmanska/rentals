@@ -27,7 +27,7 @@ def get_rented_cars(service_date):
     return rented_cars
 
 
-def check_if_car_is_rented(inv_id, service_date, get_rented_cars):
+def check_if_car_is_rented(inv_id, service_date):
     car_is_rented = (inv_id, service_date)
     rented_cars = get_rented_cars(service_date)
     for dictionary in rented_cars:
@@ -36,10 +36,12 @@ def check_if_car_is_rented(inv_id, service_date, get_rented_cars):
                 car_is_rented = (inv_id, return_date)
     return car_is_rented
 
+
 def getting_last_service_id():
-    Q = f"SELECT max(id) FROM service"
-    result = interaction.select_data(Q)
-    return result
+    Q = "SELECT id FROM service ORDER BY id DESC LIMIT 1"
+    last_id_from_db = interaction.select_data(Q)[0][0]
+    return last_id_from_db
+
 
 def create_service_dates():
     service_dates = []
@@ -67,14 +69,15 @@ def create_tire_change_dates():
     tire_dates.sort()
     return tire_dates
 
-def generate_services(service_dates, service_type, service_cost, get_rented_cars):
+
+def generate_services(service_dates, service_type, service_cost):
     service_table = []
 
-    indeks = getting_last_service_id()
+    indeks = getting_last_service_id() + 1
     for s_date in service_dates:
         cars_stock = get_cars_in_stock(s_date)
         for stock_id in cars_stock:
-            (inv_id, return_date) = check_if_car_is_rented(stock_id, s_date, get_rented_cars)
+            (inv_id, return_date) = check_if_car_is_rented(stock_id, s_date)
             if return_date == s_date:
                 service_table.append((indeks, inv_id, service_type, s_date, service_cost))
             else:
@@ -83,24 +86,35 @@ def generate_services(service_dates, service_type, service_cost, get_rented_cars
     return service_table
 
 
-def services_list(get_rented_cars):
+def services_list():
     service_dates = create_service_dates()
-    services = generate_services(service_dates, 'service', 500, get_rented_cars)
+    services = generate_services(service_dates, 'service', 500)
     return services
 
-def tire_change_list(get_rented_cars):
+
+def tire_change_list():
     tire_change_dates = create_tire_change_dates()
-    tire_change = generate_services(tire_change_dates, 'tire_change', 200, get_rented_cars)
+    tire_change = generate_services(tire_change_dates, 'tire_change', 200)
     return tire_change
+
 
 def merging_services(services, tire_change):
     services.extend(tire_change)
-    print(services)
     entire_service_list = sorted(services, key=lambda x: x[3])
     return entire_service_list
 
 
+def insert_data(insert_list):
+    db, cursor = interaction.connection()
+    Q = """INSERT INTO service (id, inventory_id, service_type, service_date, service_cost) 
+        VALUES (%s, %s, %s, %s, %s)"""
+    # cursor.executemany(Q, insert_list)
+    return "Data inserted into database"
+
+
 if __name__ == "__main__":
-    services = services_list(get_rented_cars)
-    tire_change = tire_change_list(get_rented_cars)
+    services = services_list()
+    tire_change = tire_change_list()
     entire_service_list = merging_services(services, tire_change)
+    insert = insert_data(entire_service_list)
+
