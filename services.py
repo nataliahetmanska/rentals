@@ -48,15 +48,23 @@ def create_service_dates():
     return service_dates
 
 
-def create_tire_change_dates():
+def create_summer_tire_change_dates():
     tire_dates = []
     start_date_summer = datetime.strptime('2016-03-15 00:00:00', '%Y-%m-%d %H:%M:%S')
+
+    today = datetime.today()
+    while start_date_summer < today:
+        tire_dates.append(start_date_summer)
+        start_date_summer += timedelta(days=365)
+    return tire_dates
+
+def create_winter_tire_change_dates():
+    tire_dates = []
+
     start_date_winter = datetime.strptime('2016-11-15 00:00:00', '%Y-%m-%d %H:%M:%S')
     today = datetime.today()
-    while start_date_summer < today or start_date_winter < today:
-        tire_dates.append(start_date_summer)
+    while start_date_winter < today:
         tire_dates.append(start_date_winter)
-        start_date_summer += timedelta(days=365)
         start_date_winter += timedelta(days=365)
     return tire_dates
 
@@ -82,10 +90,12 @@ def services_list():
     services = generate_services(service_dates, 'service', 500)
     return services
 
-
 def tire_change_list():
-    service_dates = create_tire_change_dates()
-    tire_change = generate_services(service_dates, 'tire_change', 200)
+    summer_tire_change_dates = create_summer_tire_change_dates()
+    winter_tire_change_dates = create_winter_tire_change_dates()
+    summer_tire_change = generate_services(summer_tire_change_dates, 'summer_tire_change', 200)
+    winter_tire_change = generate_services(winter_tire_change_dates, 'summer_tire_change', 150)
+    tire_change = list(zip(summer_tire_change, winter_tire_change))
     return tire_change
 
 
