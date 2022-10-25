@@ -1,6 +1,7 @@
 import service
 import unittest
 import datetime
+from freezegun import freeze_time
 
 class TestServicesGenerator(unittest.TestCase):
 
@@ -23,7 +24,15 @@ class TestServicesGenerator(unittest.TestCase):
         expected_result = [{1: datetime.date(2017, 2, 16)}, {5: datetime.date(2017, 2, 22)}, {6: datetime.date(2017, 2, 15)}]
         self.assertEqual(result, expected_result)
 
-
+    @freeze_time("Aug 29th, 2018")
+    def test_create_service_dates(self):
+        expected_result = [datetime.datetime(2016, 7, 1, 0, 0), datetime.datetime(2017, 1, 3, 0, 0),
+                           datetime.datetime(2017, 7, 8, 0, 0), datetime.datetime(2018, 1, 10, 0, 0),
+                           datetime.datetime(2018, 7, 15, 0, 0)]
+        result = service.create_service_dates()
+        self.assertEqual(result, expected_result)
+        
+        
 
 class FakeCursorLastServiceId():
     def execute(self, _):
@@ -54,3 +63,6 @@ class FakeCursorRentedCars():
 def fake_connection_get_rented_cars():
     fake_cursor = FakeCursorRentedCars()
     return None, fake_cursor
+
+def test_datetime():
+    assert date.today() == date(2018, 8, 29)
