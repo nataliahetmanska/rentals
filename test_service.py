@@ -32,6 +32,14 @@ class TestServicesGenerator(unittest.TestCase):
         result = service.create_service_dates()
         self.assertEqual(result, expected_result)
         
+    @freeze_time("Aug 29th, 2018")
+    def test_create_tire_change_dates(self):
+        expected_result = [datetime.datetime(2016, 3, 15, 0, 0), datetime.datetime(2016, 11, 15, 0, 0),
+                           datetime.datetime(2017, 3, 15, 0, 0), datetime.datetime(2017, 11, 15, 0, 0),
+                           datetime.datetime(2018, 3, 15, 0, 0)]
+        result = service.create_tire_change_dates()
+        self.assertEqual(result, expected_result)
+        
         
 
 class FakeCursorLastServiceId():
