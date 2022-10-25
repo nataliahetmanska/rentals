@@ -36,6 +36,10 @@ def check_if_car_is_rented(inv_id, service_date):
                 car_is_rented = (inv_id, return_date)
     return car_is_rented
 
+def getting_last_service_id():
+    Q = f"SELECT max(id) FROM service"
+    result = interaction.select_data(Q)
+    return result
 
 def create_service_dates():
     service_dates = []
@@ -72,7 +76,7 @@ def create_winter_tire_change_dates():
 def generate_services(service_dates, service_type, service_cost):
     service_table = []
 
-    indeks = 1
+    indeks = getting_last_service_id()
     for s_date in service_dates:
         cars_stock = get_cars_in_stock(s_date)
         for stock_id in cars_stock:
