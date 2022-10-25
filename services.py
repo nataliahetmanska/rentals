@@ -90,7 +90,7 @@ def services_list():
 
 def tire_change_list():
     tire_change_dates = create_tire_change_dates()
-    tire_change = generate_services(summer_tire_change_dates, 'summer_tire_change', 200)
+    tire_change = generate_services(tire_change_dates, 'summer_tire_change', 200)
     return tire_change
 
 
