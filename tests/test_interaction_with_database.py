@@ -17,9 +17,11 @@ class CredentialDouble:
 class ConnectorDouble:
     def __init__(self):
         self._connection = None
+        self.connection_params = None
 
     def connect(self, **kwargs):
         self._connection = ConnectionDouble()
+        self.connection_params = kwargs
         return self._connection
 
 
@@ -62,6 +64,18 @@ class TestInteractionWithDatabase(unittest.TestCase):
         db.select_data(sql)
         sql_passed = db.msc._connection._cursor.last_query
         self.assertEqual(sql_passed, sql)
+        
+    def test_connection_calls_connect_with_proper_args(self):
+        db.keyring = KeyringDouble()
+        db.msc = ConnectorDouble()
+        result = db.connection()
+        expected_params = {'host': '80.211.255.121',
+                           'port': 3396,
+                           'user': 'test_username',
+                           'password': 'P4ssw0rd1',
+                           'database': 'wheelie'}
+        self.assertEqual(db.msc.connection_params, expected_params)
+        self.assertEqual(len(result), 2)
 
 
 if __name__ == '__main__':
