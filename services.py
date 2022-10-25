@@ -27,7 +27,7 @@ def get_rented_cars(service_date):
     return rented_cars
 
 
-def check_if_car_is_rented(inv_id, service_date):
+def check_if_car_is_rented(inv_id, service_date, get_rented_cars):
     car_is_rented = (inv_id, service_date)
     rented_cars = get_rented_cars(service_date)
     for dictionary in rented_cars:
@@ -67,7 +67,7 @@ def create_tire_change_dates():
     tire_dates.sort()
     return tire_dates
 
-def generate_services(service_dates, service_type, service_cost):
+def generate_services(service_dates, service_type, service_cost, get_rented_cars):
     service_table = []
 
     indeks = getting_last_service_id()
@@ -83,14 +83,14 @@ def generate_services(service_dates, service_type, service_cost):
     return service_table
 
 
-def services_list():
+def services_list(get_rented_cars):
     service_dates = create_service_dates()
-    services = generate_services(service_dates, 'service', 500)
+    services = generate_services(service_dates, 'service', 500, get_rented_cars)
     return services
 
-def tire_change_list():
+def tire_change_list(get_rented_cars):
     tire_change_dates = create_tire_change_dates()
-    tire_change = generate_services(tire_change_dates, 'tire_change', 200)
+    tire_change = generate_services(tire_change_dates, 'tire_change', 200, get_rented_cars)
     return tire_change
 
 def merging_services(services, tire_change):
@@ -101,6 +101,6 @@ def merging_services(services, tire_change):
 
 
 if __name__ == "__main__":
-    services = services_list()
-    tire_change = tire_change_list()
+    services = services_list(get_rented_cars)
+    tire_change = tire_change_list(get_rented_cars)
     entire_service_list = merging_services(services, tire_change)
