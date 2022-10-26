@@ -34,6 +34,7 @@ def check_if_car_is_rented(inv_id, service_date):
     for dictionary in rented_cars:
         for key, return_date in dictionary.items():
             if inv_id == key:
+                print(return_date)
                 car_is_rented = (inv_id, return_date)
     return car_is_rented
 
@@ -79,10 +80,7 @@ def generate_services(service_dates, service_type, service_cost):
         cars_stock = get_cars_in_stock(s_date)
         for stock_id in cars_stock:
             (inv_id, return_date) = check_if_car_is_rented(stock_id, s_date)
-            if return_date == s_date:
-                service_table.append((indeks, inv_id, service_type, s_date, service_cost))
-            else:
-                service_table.append((indeks, inv_id, service_type, return_date, service_cost))
+            service_table.append((indeks, inv_id, service_type, return_date, service_cost))
             indeks += 1
     return service_table
 
