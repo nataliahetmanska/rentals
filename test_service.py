@@ -8,7 +8,7 @@ from freezegun import freeze_time
 class TestServicesGenerator(unittest.TestCase):
 
     def test_get_cars_in_stock(self):
-        services.interaction.connection = fake_connection_get_last_service_id
+        services.interaction.connection = fake_connection_get_inventory
         service_date1 = datetime.datetime(2015, 2, 1, 0, 0)
         service_date2 = datetime.datetime(2017, 2, 1, 0, 0)
         service_date3 = datetime.datetime(2020, 2, 1, 0, 0)
@@ -57,7 +57,7 @@ class TestServicesGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
 
-class FakeCursorLastServiceId():
+class FakeCursorGetInventory():
     def execute(self, _):
         pass
 
@@ -67,8 +67,8 @@ class FakeCursorLastServiceId():
                 (3, datetime.datetime(2020, 1, 1, 0, 0), datetime.datetime(2020, 1, 1, 0, 0))]
 
 
-def fake_connection_get_last_service_id():
-    fake_cursor = FakeCursorLastServiceId()
+def fake_connection_get_inventory():
+    fake_cursor = FakeCursorGetInventory)
     return None, fake_cursor
 
 
