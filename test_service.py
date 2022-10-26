@@ -1,4 +1,5 @@
 import services
+from services import get_rented_cars
 import unittest
 import datetime
 from freezegun import freeze_time
@@ -19,6 +20,7 @@ class TestServicesGenerator(unittest.TestCase):
         self.assertEqual(result3, [3])
 
     def test_get_rented_cars(self):
+        services.get_rented_cars = get_rented_cars
         services.interaction.connection = fake_connection_get_rented_cars
         service_date1 = datetime.datetime(2017, 2, 14, 0, 0)
         result = services.get_rented_cars(service_date1)
