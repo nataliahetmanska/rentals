@@ -28,6 +28,7 @@ def get_rented_cars(service_date):
 
 
 def check_if_car_is_rented(inv_id, service_date):
+    service_date = service_date.date()
     car_is_rented = (inv_id, service_date)
     rented_cars = get_rented_cars(service_date)
     for dictionary in rented_cars:
