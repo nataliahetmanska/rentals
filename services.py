@@ -34,7 +34,6 @@ def check_if_car_is_rented(inv_id, service_date):
     for dictionary in rented_cars:
         for key, return_date in dictionary.items():
             if inv_id == key:
-                print(return_date)
                 car_is_rented = (inv_id, return_date)
     return car_is_rented
 
