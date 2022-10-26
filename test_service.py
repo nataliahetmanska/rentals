@@ -1,5 +1,5 @@
 import services
-from services import get_rented_cars
+from services import get_rented_cars, check_if_car_is_rented, get_cars_in_stock
 import unittest
 import datetime
 from freezegun import freeze_time
@@ -8,6 +8,7 @@ from freezegun import freeze_time
 class TestServicesGenerator(unittest.TestCase):
 
     def test_get_cars_in_stock(self):
+        services.get_cars_in_stock = get_cars_in_stock
         services.interaction.connection = fake_connection_get_inventory
         service_date1 = datetime.datetime(2015, 2, 1, 0, 0)
         service_date2 = datetime.datetime(2017, 2, 1, 0, 0)
@@ -29,6 +30,7 @@ class TestServicesGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     def test_check_if_car_is_rented(self):
+        services.check_if_car_is_rented = check_if_car_is_rented
         services.get_rented_cars = get_rented_cars_mp
         inv_id1 = 5
         inv_id2 = 3
@@ -54,6 +56,19 @@ class TestServicesGenerator(unittest.TestCase):
                            datetime.datetime(2017, 3, 15, 0, 0), datetime.datetime(2017, 11, 15, 0, 0),
                            datetime.datetime(2018, 3, 15, 0, 0)]
         result = services.create_tire_change_dates()
+        self.assertEqual(result, expected_result)
+        
+    def test_generate_services(self):
+        services.check_if_car_is_rented = check_if_car_is_rented_mp
+        service_dates = [datetime.datetime(2020, 4, 1, 0, 0)]
+        service_type = 'service'
+        service_cost = 300
+        services.getting_last_service_id = get_last_service_id_mp
+        services.get_cars_in_stock = get_cars_in_stock_mp
+        result = services.generate_services(service_dates, service_type, service_cost)
+        expected_result = [(2, 2, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300),
+                           (3, 4, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300),
+                           (4, 5, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300)]
         self.assertEqual(result, expected_result)
 
     def test_get_latest_index(self):
@@ -122,3 +137,13 @@ def test_datetime():
 
 def get_rented_cars_mp(service_date):
     return [{1: datetime.date(2017, 1, 16)}, {5: datetime.date(2017, 1, 11)}, {6: datetime.date(2017, 1, 15)}]
+
+def get_last_service_id_mp():
+    return 1
+
+def get_cars_in_stock_mp(service_date):
+    return [2, 4, 5]
+
+def check_if_car_is_rented_mp(inv_id, service_date):
+    return inv_id, service_date
+
