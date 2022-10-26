@@ -27,11 +27,16 @@ class TestServicesGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     def test_check_if_car_is_rented(self):
-        inv_id = 5
+        services.get_rented_cars = get_rented_cars_mp
+        inv_id1 = 5
+        inv_id2 = 3
         service_date = datetime.datetime(2017, 1, 10, 0, 0)
-        result = services.check_if_car_is_rented(inv_id, service_date)
-        expected_result = 5, datetime.date(2017, 1, 11)
-        self.assertEqual(result, expected_result)
+        result1 = services.check_if_car_is_rented(inv_id1, service_date)
+        result2 = services.check_if_car_is_rented(inv_id2, service_date)
+        expected_result_1 = 5, datetime.date(2017, 1, 11)
+        expected_result_2 = 3, datetime.date(2017, 1, 10)
+        self.assertEqual(result1, expected_result_1)
+        self.assertEqual(result2, expected_result_2)
 
     @freeze_time("Aug 29th, 2018")
     def test_create_service_dates(self):
