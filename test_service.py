@@ -56,6 +56,34 @@ class TestServicesGenerator(unittest.TestCase):
         result = services.create_tire_change_dates()
         self.assertEqual(result, expected_result)
 
+    def test_get_latest_index(self):
+        services.interaction.connection = fake_connection_getting_last_service_id
+        result = services.getting_last_service_id()
+        self.assertIsInstance(result, int)
+
+    def test_services_list(self):
+        pass
+
+    def test_tire_change_list(self):
+        pass
+
+    def test_merging_services(self):
+        pass
+
+
+class FakeCursorGettingLastServiceID():
+    def execute(self, _):
+        pass
+
+    def fetchall(self):
+        return [[1]]
+
+
+def fake_connection_getting_last_service_id():
+    fake_cursor = FakeCursorGettingLastServiceID()
+    return None, fake_cursor
+
+
 
 class FakeCursorGetInventory():
     def execute(self, _):
@@ -68,7 +96,7 @@ class FakeCursorGetInventory():
 
 
 def fake_connection_get_inventory():
-    fake_cursor = FakeCursorGetInventory)
+    fake_cursor = FakeCursorGetInventory()
     return None, fake_cursor
 
 
