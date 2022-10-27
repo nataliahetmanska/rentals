@@ -83,7 +83,26 @@ class TestServicesGenerator(unittest.TestCase):
         pass
 
     def test_merging_services(self):
-        pass
+        service = [(2, 3, 'service', datetime.date(2018, 1, 11), 500),
+                    (3, 8, 'service', datetime.date(2018, 1, 13), 500),
+                    (5, 9, 'service', datetime.date(2018, 1, 17), 500),
+                    (7, 11, 'service', datetime.date(2018, 1, 21), 500)]
+
+        tire_change = [(1, 4, 'service', datetime.date(2018, 1, 28), 500),
+                    (6, 45, 'service', datetime.date(2018, 1, 16), 500),
+                    (9, 23, 'service', datetime.date(2018, 1, 14), 500),
+                    (10, 15, 'service', datetime.date(2018, 1, 27), 500)]
+
+        expected_result = [(2, 3, 'service', datetime.date(2018, 1, 11), 500),
+                           (3, 8, 'service', datetime.date(2018, 1, 13), 500),
+                           (9, 23, 'service', datetime.date(2018, 1, 14), 500),
+                           (6, 45, 'service', datetime.date(2018, 1, 16), 500),
+                           (5, 9, 'service', datetime.date(2018, 1, 17), 500),
+                           (7, 11, 'service', datetime.date(2018, 1, 21), 500),
+                           (10, 15, 'service', datetime.date(2018, 1, 27), 500),
+                           (1, 4, 'service', datetime.date(2018, 1, 28), 500)]
+        result = services.merging_services(service, tire_change)
+        self.assertEqual(expected_result, result)
 
 
 class FakeCursorGettingLastServiceID():
