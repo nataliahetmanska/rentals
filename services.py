@@ -1,5 +1,6 @@
 import interaction_with_database as interaction
 from datetime import datetime, timedelta
+import datetime
 
 
 def get_cars_in_stock(service_date):
@@ -8,10 +9,10 @@ def get_cars_in_stock(service_date):
     buy_and_sell_date = []
     for i in inventory:
         if i[1] != i[2]:
-            if i[2] >= service_date >= i[1]:
+            if i[2].date() >= service_date >= i[1].date():
                 buy_and_sell_date.append(i[0])
         else:
-            if service_date >= i[1]:
+            if service_date >= i[1].date():
                 buy_and_sell_date.append(i[0])
     return buy_and_sell_date
 
@@ -20,7 +21,6 @@ def get_rented_cars(service_date):
     Q = f"SELECT inventory_id, rental_date, return_date FROM rental"
     result = interaction.select_data(Q)
     rented_cars = []
-    service_date = service_date.date()
     for i in result:
         if i[2] > service_date >= i[1]:
             rented_cars.append({i[0]: i[2]})
@@ -28,7 +28,6 @@ def get_rented_cars(service_date):
 
 
 def check_if_car_is_rented(inv_id, service_date):
-    service_date = service_date.date()
     car_is_rented = (inv_id, service_date)
     rented_cars = get_rented_cars(service_date)
     for dictionary in rented_cars:
@@ -46,8 +45,8 @@ def getting_last_service_id():
 
 def create_service_dates():
     service_dates = []
-    start_date = datetime.strptime('2016-07-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-    today = datetime.today()
+    start_date = datetime.datetime(2016, 7, 1).date()
+    today = datetime.date.today()
 
     while start_date < today:
         service_dates.append(start_date)
@@ -57,10 +56,10 @@ def create_service_dates():
 
 def create_tire_change_dates():
     tire_dates = []
-    start_date_summer = datetime.strptime('2016-03-15 00:00:00', '%Y-%m-%d %H:%M:%S')
-    start_date_winter = datetime.strptime('2016-11-15 00:00:00', '%Y-%m-%d %H:%M:%S')
+    start_date_summer = datetime.datetime(2016, 3, 15).date()
+    start_date_winter = datetime.datetime(2016, 11, 15).date()
 
-    today = datetime.today()
+    today = datetime.date.today()
     while start_date_summer < today:
         tire_dates.append(start_date_summer)
         start_date_summer += timedelta(days=365)
