@@ -10,9 +10,9 @@ class TestServicesGenerator(unittest.TestCase):
     def test_get_cars_in_stock(self):
         services.get_cars_in_stock = get_cars_in_stock
         services.interaction.connection = fake_connection_get_inventory
-        service_date1 = datetime.datetime(2015, 2, 1, 0, 0)
-        service_date2 = datetime.datetime(2017, 2, 1, 0, 0)
-        service_date3 = datetime.datetime(2020, 2, 1, 0, 0)
+        service_date1 = datetime.date(2015, 2, 1)
+        service_date2 = datetime.date(2017, 2, 1)
+        service_date3 = datetime.date(2020, 2, 1)
         result1 = services.get_cars_in_stock(service_date1)
         result2 = services.get_cars_in_stock(service_date2)
         result3 = services.get_cars_in_stock(service_date3)
@@ -23,7 +23,7 @@ class TestServicesGenerator(unittest.TestCase):
     def test_get_rented_cars(self):
         services.get_rented_cars = get_rented_cars
         services.interaction.connection = fake_connection_get_rented_cars
-        service_date1 = datetime.datetime(2017, 2, 14, 0, 0)
+        service_date1 = datetime.date(2017, 2, 14)
         result = services.get_rented_cars(service_date1)
         expected_result = [{1: datetime.date(2017, 2, 16)}, {5: datetime.date(2017, 2, 22)},
                            {6: datetime.date(2017, 2, 15)}]
@@ -34,7 +34,7 @@ class TestServicesGenerator(unittest.TestCase):
         services.get_rented_cars = get_rented_cars_mp
         inv_id1 = 5
         inv_id2 = 3
-        service_date = datetime.datetime(2017, 1, 10, 0, 0)
+        service_date = datetime.date(2017, 1, 10)
         result1 = services.check_if_car_is_rented(inv_id1, service_date)
         result2 = services.check_if_car_is_rented(inv_id2, service_date)
         expected_result_1 = 5, datetime.date(2017, 1, 11)
@@ -44,31 +44,31 @@ class TestServicesGenerator(unittest.TestCase):
 
     @freeze_time("Aug 29th, 2018")
     def test_create_service_dates(self):
-        expected_result = [datetime.datetime(2016, 7, 1, 0, 0), datetime.datetime(2017, 1, 3, 0, 0),
-                           datetime.datetime(2017, 7, 8, 0, 0), datetime.datetime(2018, 1, 10, 0, 0),
-                           datetime.datetime(2018, 7, 15, 0, 0)]
+        expected_result = [datetime.date(2016, 7, 1), datetime.date(2017, 1, 3),
+                           datetime.date(2017, 7, 8), datetime.date(2018, 1, 10),
+                           datetime.date(2018, 7, 15)]
         result = services.create_service_dates()
         self.assertEqual(result, expected_result)
 
     @freeze_time("Aug 29th, 2018")
     def test_create_tire_change_dates(self):
-        expected_result = [datetime.datetime(2016, 3, 15, 0, 0), datetime.datetime(2016, 11, 15, 0, 0),
-                           datetime.datetime(2017, 3, 15, 0, 0), datetime.datetime(2017, 11, 15, 0, 0),
-                           datetime.datetime(2018, 3, 15, 0, 0)]
+        expected_result = [datetime.date(2016, 3, 15), datetime.date(2016, 11, 15),
+                           datetime.date(2017, 3, 15), datetime.date(2017, 11, 15),
+                           datetime.date(2018, 3, 15)]
         result = services.create_tire_change_dates()
         self.assertEqual(result, expected_result)
         
     def test_generate_services(self):
         services.check_if_car_is_rented = check_if_car_is_rented_mp
-        service_dates = [datetime.datetime(2020, 4, 1, 0, 0)]
+        service_dates = [datetime.date(2020, 4, 1)]
         service_type = 'service'
         service_cost = 300
         services.getting_last_service_id = get_last_service_id_mp
         services.get_cars_in_stock = get_cars_in_stock_mp
         result = services.generate_services(service_dates, service_type, service_cost)
-        expected_result = [(2, 2, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300),
-                           (3, 4, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300),
-                           (4, 5, 'service', datetime.datetime(2020, 4, 1, 0, 0), 300)]
+        expected_result = [(2, 2, 'service', datetime.date(2020, 4, 1), 300),
+                           (3, 4, 'service', datetime.date(2020, 4, 1), 300),
+                           (4, 5, 'service', datetime.date(2020, 4, 1), 300)]
         self.assertEqual(result, expected_result)
 
     def test_get_latest_index(self):
